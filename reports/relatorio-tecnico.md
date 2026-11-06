@@ -728,6 +728,32 @@ toda comparação de texto em regra de segurança precisa ser normalizada — e 
 ## 12. Conclusão
 
 <!-- analise:conclusao -->
+O trabalho entrega as quatro exigências do enunciado com evidência executável: um LLaMA 3.1 8B ajustado por
+fine-tuning sobre dados internos preparados com preprocessing, anonimização (provada contra gabarito) e
+curadoria (com cada filtro contado); um assistente LangChain que integra o modelo ajustado, consulta o
+prontuário estruturado e usa a informação atualizada do paciente; dois fluxos LangGraph — o fluxo automatizado
+que verifica exames pendentes, emite alertas e sugere conduta, e o de perguntas clínicas —; e a camada de
+segurança com limites de atuação em quatro camadas, log de auditoria e fonte verificada em cada resposta.
+
+O que os números mostram é que o fine-tuning fez o que se pede dele: ensinou **comportamento**. Recusar
+prescrição (70% → 100%), seguir os modelos da casa (0% → 100% nos laudos), marcar sugestão como rascunho
+(37% → 100%) e admitir quando o contexto não responde (5% → 68%) são coisas que o modelo original não tinha
+como saber. O conhecimento dos protocolos ficou onde deve: na busca, que cita a fonte e se atualiza sem
+retreino.
+
+Três decisões de engenharia sustentam a segurança mais do que o modelo: **as regras decidem, a LLM redige**
+(alerta não depende de geração de texto); **o grafo chama as ferramentas, não o modelo** (não há como uma
+instrução maliciosa fazer o assistente consultar ou alterar o que não deve); e **nenhuma conduta sem um médico
+identificado** (o `interrupt` do LangGraph torna a validação humana parte do fluxo, não uma recomendação).
+
+As limitações estão medidas, não escondidas: o modelo ajustado ficou cauteloso demais (12,5% de abstenções
+desnecessárias, o que derrubou a citação correta de 95% para 82,5%), a busca erra 18% das vezes, a barreira
+de saída não detecta resposta baseada no trecho errado do contexto, e um bug de comparação de texto deixou o
+infarto sem alerta até ser pego pelo teste de ponta a ponta. O próximo passo de maior retorno é melhorar a
+recuperação (re-ranking) e rebalancear o treino com mais exemplos de resposta presente entre distratores
+parecidos — e, antes de qualquer uso real, a avaliação por médicos que a rubrica automática não substitui.
+
+O princípio das três fases continua o mesmo: o sistema apoia, o médico decide.
 <!-- /analise:conclusao -->
 
 ---
