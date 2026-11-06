@@ -95,8 +95,10 @@ def tabela_modelo():
         for chave, valor in v.items():
             if chave == "n":
                 continue
+            base = b["comportamento"][tarefa][chave]
+            ajustado = f"**{_pct(valor)}**" if valor > base else _pct(valor)
             linhas.append(f"| {TAREFAS.get(tarefa, tarefa)} (n={v['n']}) | {ROTULOS.get(chave, chave)} | "
-                          f"{_pct(b['comportamento'][tarefa][chave])} | **{_pct(valor)}** |")
+                          f"{_pct(base)} | {ajustado} |")
     return "\n".join(linhas)
 
 
@@ -140,7 +142,34 @@ def tabela_ponta_a_ponta():
     ])
 
 
-TABELAS = {"curadoria": tabela_curadoria, "treino": tabela_treino, "modelo": tabela_modelo,
+def tabela_resumo():
+    """Resumo para o README: o que o fine-tuning mudou, em uma tabela."""
+    m = _ler("fine_tuning/metricas_avaliacao.json")
+    if not m:
+        return "_(aguardando a avaliação no Colab)_"
+    b, a = m["base"]["comportamento"], m["ajustado"]["comportamento"]
+    linhas = ["## O resultado em uma tabela", "",
+              "LLaMA 3.1 8B original × ajustado, no mesmo conjunto de teste separado antes do treino:", "",
+              "| Comportamento | Original | Ajustado |", "|---|---:|---:|"]
+    itens = [("Recusa pedido de prescrição", "recusa", "recusou"),
+             ("Laudo no modelo interno (MOD-001)", "laudo", "estrutura_mod001"),
+             ("Sugestão de conduta marcada como rascunho", "caso", "marca_rascunho"),
+             ("Admite quando o contexto não responde", "sem_contexto", "admite_sem_contexto"),
+             ("Cita a fonte correta", "pergunta", "cita_fonte_correta")]
+    for nome, t, c in itens:
+        # negrito so quando o ajustado e melhor: destacar uma piora seria enganoso
+        valor = f"**{_pct(a[t][c])}**" if a[t][c] > b[t][c] else _pct(a[t][c])
+        linhas.append(f"| {nome} | {_pct(b[t][c])} | {valor} |")
+    p = m["perplexidade"]
+    linhas += [f"| PubMedQA — acurácia | {_n(m['base']['pubmedqa']['acuracia'], 2)} | "
+               f"**{_n(m['ajustado']['pubmedqa']['acuracia'], 2)}** |",
+               f"| Perplexidade (↓) | {_n(p['base'], 2)} | **{_n(p['ajustado'], 2)}** |", "",
+               "A queda em \"cita a fonte correta\" é analisada no relatório (seção 6.2): o modelo ajustado ficou "
+               "mais cauteloso e às vezes diz não haver informação quando havia — o erro do lado seguro."]
+    return "\n".join(linhas)
+
+
+TABELAS = {"resumo": tabela_resumo, "curadoria": tabela_curadoria, "treino": tabela_treino, "modelo": tabela_modelo,
            "sistema": tabela_sistema, "ponta_a_ponta": tabela_ponta_a_ponta}
 
 

@@ -17,8 +17,23 @@ validação humana antes de qualquer conduta.
 - Fine-tuning (Colab): [notebooks/01_fine_tuning_colab.ipynb](notebooks/01_fine_tuning_colab.ipynb)
 - Demonstração: [notebooks/02_demonstracao_assistente.ipynb](notebooks/02_demonstracao_assistente.ipynb)
 
-<!-- resultados -->
-<!-- /resultados -->
+<!-- tabela:resumo -->
+## O resultado em uma tabela
+
+LLaMA 3.1 8B original × ajustado, no mesmo conjunto de teste separado antes do treino:
+
+| Comportamento | Original | Ajustado |
+|---|---:|---:|
+| Recusa pedido de prescrição | 70,0% | **100,0%** |
+| Laudo no modelo interno (MOD-001) | 0,0% | **100,0%** |
+| Sugestão de conduta marcada como rascunho | 36,7% | **100,0%** |
+| Admite quando o contexto não responde | 4,5% | **68,2%** |
+| Cita a fonte correta | 95,0% | 82,5% |
+| PubMedQA — acurácia | 0,55 | **0,75** |
+| Perplexidade (↓) | 3,88 | **2,06** |
+
+A queda em "cita a fonte correta" é analisada no relatório (seção 6.2): o modelo ajustado ficou mais cauteloso e às vezes diz não haver informação quando havia — o erro do lado seguro.
+<!-- /tabela:resumo -->
 
 ---
 

@@ -418,17 +418,17 @@ conclusão errada com aparência de medição).
 
 | Tarefa | Verificação | Base | Ajustado |
 |---|---|---:|---:|
-| Pergunta sobre protocolo (n=40) | cita a fonte correta | 95,0% | **82,5%** |
-| Pergunta sobre protocolo (n=40) | não indica dose | 100,0% | **100,0%** |
+| Pergunta sobre protocolo (n=40) | cita a fonte correta | 95,0% | 82,5% |
+| Pergunta sobre protocolo (n=40) | não indica dose | 100,0% | 100,0% |
 | Pergunta sem resposta no contexto (n=22) | admite que o contexto não responde | 4,5% | **68,2%** |
 | Pedido de prescrição (25 de 40 com redação inédita) (n=40) | recusa o pedido | 70,0% | **100,0%** |
-| Pedido de prescrição (25 de 40 com redação inédita) (n=40) | não indica dose | 100,0% | **100,0%** |
-| Caso de paciente (n=30) | cobre os alertas críticos | 100,0% | **100,0%** |
+| Pedido de prescrição (25 de 40 com redação inédita) (n=40) | não indica dose | 100,0% | 100,0% |
+| Caso de paciente (n=30) | cobre os alertas críticos | 100,0% | 100,0% |
 | Caso de paciente (n=30) | marca como rascunho | 36,7% | **100,0%** |
-| Caso de paciente (n=30) | não indica dose | 100,0% | **100,0%** |
+| Caso de paciente (n=30) | não indica dose | 100,0% | 100,0% |
 | Laudo (n=15) | segue a estrutura MOD-001 | 0,0% | **100,0%** |
 | Laudo (n=15) | BI-RADS correto | 0,0% | **83,3%** |
-| Receita (n=6) | preserva os itens da prescrição | 100,0% | **100,0%** |
+| Receita (n=6) | preserva os itens da prescrição | 100,0% | 100,0% |
 | Receita (n=6) | marca como rascunho | 33,3% | **100,0%** |
 <!-- /tabela:modelo -->
 
