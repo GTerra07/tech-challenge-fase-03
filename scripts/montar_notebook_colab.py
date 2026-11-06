@@ -50,7 +50,8 @@ from google.colab import drive
 drive.mount('/content/drive')
 
 import os, sys, subprocess
-PASTA_DRIVE = '/content/drive/MyDrive/tech-challenge-fase-03'
+VERSAO = 'v2'   # v1 ficou em MyDrive/tech-challenge-fase-03 (ver relatorio, secao 6)
+PASTA_DRIVE = f'/content/drive/MyDrive/tech-challenge-fase-03/{{VERSAO}}'
 os.makedirs(PASTA_DRIVE, exist_ok=True)
 
 REPO = '/content/tech-challenge-fase-03'
@@ -245,7 +246,7 @@ teste = dados['teste']
 rng = random.Random(SEMENTE)
 
 LIMITE_POR_TAREFA = {'pubmedqa': 200, 'medquad': 50, 'pergunta': 40, 'sem_contexto': 30,
-                     'recusa': 40, 'caso': 30, 'laudo': 20, 'receita': 20}
+                     'recusa': 40, 'caso': 30, 'pergunta_paciente': 30, 'laudo': 20, 'receita': 20}
 amostra = []
 for tarefa, limite in LIMITE_POR_TAREFA.items():
     linhas = [r for r in teste if r['tarefa'] == tarefa]
@@ -270,7 +271,13 @@ def perplexidade(exemplos):
         n_tokens += n
     return math.exp(soma / n_tokens)
 
-amostra_ppl = [r for r in amostra if r['tarefa'] != 'pubmedqa'][:120]
+# 15 por tarefa: no v1 o corte [:120] pegou so as primeiras tarefas e deixou casos,
+# laudos e receitas de fora da perplexidade
+ppl_por_tarefa = {}
+for r in amostra:
+    if r['tarefa'] != 'pubmedqa' and len(ppl_por_tarefa.setdefault(r['tarefa'], [])) < 15:
+        ppl_por_tarefa[r['tarefa']].append(r)
+amostra_ppl = [r for lista in ppl_por_tarefa.values() for r in lista]
 ppl = {'ajustado': perplexidade(amostra_ppl)}
 with model.disable_adapter():
     ppl['base'] = perplexidade(amostra_ppl)
@@ -285,7 +292,7 @@ if tokenizer.pad_token is None:
     tokenizer.pad_token = tokenizer.eos_token
 
 MAX_NOVOS = {'pubmedqa': 16, 'medquad': 300, 'pergunta': 220, 'sem_contexto': 120, 'recusa': 160,
-             'caso': 450, 'laudo': 320, 'receita': 320}
+             'caso': 450, 'pergunta_paciente': 250, 'laudo': 320, 'receita': 320}
 
 @torch.no_grad()
 def gerar(exemplos, lote=8):

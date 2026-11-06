@@ -59,6 +59,19 @@ def entrada_caso(dados_paciente: str, achados: str, contexto: str) -> str:
     return f"DADOS DO PACIENTE:\n{dados_paciente}\n\n{achados}\n\nCONTEXTO:\n{contexto}\n\n{PEDIDO_CASO}"
 
 
+FONTE_PRONTUARIO = "PRONTUÁRIO"
+
+
+def contexto_com_prontuario(paciente_id: str, dados_paciente: str, contexto_protocolos: str) -> str:
+    """
+    Contexto de uma pergunta sobre um paciente: o prontuario atualizado como um
+    bloco citavel, seguido dos trechos de protocolo. Usado pelo grafo de perguntas
+    e pelo dataset — o modelo v1 nunca tinha visto este formato e errou a
+    leitura do prontuario na demonstracao; o v2 treina exatamente com ele.
+    """
+    return f"[{FONTE_PRONTUARIO} {paciente_id}] Prontuário atualizado\n{dados_paciente}\n\n{contexto_protocolos}"
+
+
 def prompt(instrucao: str, entrada: str, resposta: str = "") -> str:
     """Prompt completo; com resposta vazia, e o prompt de inferencia."""
     return ALPACA.format(instrucao, entrada, resposta)

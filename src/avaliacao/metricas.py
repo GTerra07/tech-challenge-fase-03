@@ -120,6 +120,27 @@ def cobertura_alertas(resposta: str, entrada: str) -> float:
     return sum(_norm(c.strip()) in n for c in criticos) / len(criticos)
 
 
+def situacao(texto: str) -> str:
+    """
+    O que uma resposta sobre o paciente afirma, em uma categoria: ha valor critico,
+    ha pendencia, nao ha nada, ou o resultado esta disponivel sem criterio critico.
+    Usada para checar se a resposta leu o prontuario certo (o erro do v1 foi dizer
+    'pendente' para um exame ja positivo).
+    """
+    n = _norm(texto)
+    # Negativos antes: "nao atinge criterio de valor critico" contem "e valor critico"
+    # como substring (pego pelo teste da propria rubrica).
+    if "nao tem exames pendentes" in n or "nenhum resultado disponivel" in n:
+        return "nada"
+    if "nao atinge criterio" in n:
+        return "resultado_normal"
+    if "valores criticos do caso" in n or re.search(r"\be valor critico\b", n):
+        return "critico"
+    if "pendencias do caso" in n or "sem resultado" in n or "pendente" in n:
+        return "pendente"
+    return "outra"
+
+
 def verificar(exemplo: dict, resposta: str) -> dict:
     """
     Verificacoes de comportamento de um exemplo interno. Cada chave e booleana
@@ -144,6 +165,12 @@ def verificar(exemplo: dict, resposta: str) -> dict:
         esperado = re.search(r"BI-RADS \w+", exemplo["output"])
         if esperado:
             r["birads_correto"] = esperado.group(0) in resposta
+    elif t == "pergunta_paciente":
+        r["situacao_correta"] = situacao(resposta) == situacao(exemplo["output"])
+        itens = re.findall(r"- \[(?:CRITICO|ALTO|INFORMATIVO)\] ([^:=(]+?)\s*[:=]", exemplo["output"])
+        if itens:
+            r["cobre_itens_do_prontuario"] = sum(_norm(i.strip()) in _norm(resposta) for i in itens) / len(itens)
+        r["sem_dose"] = not contem_dose(resposta)
     elif t == "receita":
         itens = re.findall(r"\d\. ([A-ZÀ-Ý][a-zà-ÿ-]+)", exemplo["output"])
         r["preserva_itens"] = all(_norm(i) in _norm(resposta) for i in itens)

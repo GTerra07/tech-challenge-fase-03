@@ -32,7 +32,7 @@ from src.assistente.estado import EstadoPergunta
 from src.assistente.llm import Redator
 from src.dados.conhecimento_interno import RESPOSTA_RECUSA, RESPOSTA_SEM_CONTEXTO
 from src.fine_tuning import formato
-from src.prontuario import ferramentas
+from src.prontuario import ferramentas, regras
 from src.rag.indice import BuscaProtocolos, contexto
 from src.seguranca.anonimizacao import anonimizar
 from src.seguranca.auditoria import Auditoria, auditar_no
@@ -42,7 +42,7 @@ from src.seguranca.limites import triagem_entrada as aplicar_triagem, verificar_
 # clinicas ficaram >= 0,35; "capital da Franca" ficou em 0,15).
 CONFIANCA_MINIMA = 0.25
 _RE_PACIENTE = re.compile(r"\bP-\d{4}\b", re.IGNORECASE)
-FONTE_PRONTUARIO = "PRONTUÁRIO"
+FONTE_PRONTUARIO = formato.FONTE_PRONTUARIO
 
 
 def criar_grafo_pergunta(redator: Redator, busca: BuscaProtocolos, auditoria: Auditoria | None = None,
@@ -85,10 +85,17 @@ def criar_grafo_pergunta(redator: Redator, busca: BuscaProtocolos, auditoria: Au
     @auditado
     def buscar_protocolos(e: EstadoPergunta) -> dict:
         trechos, confianca = busca.buscar(e["pergunta"])
+        if e.get("dados_paciente"):
+            # As secoes que os achados do paciente citam vem primeiro (mesma funcao do
+            # dataset), seguidas do que a busca trouxer de novo pela pergunta.
+            registro = ferramentas.carregar_para_regras(e["paciente_id"])
+            dos_achados = busca.por_fontes(regras.fontes_da_pergunta_paciente(registro))
+            vistas = {t.fonte for t in dos_achados}
+            trechos = dos_achados + [t for t in trechos if t.fonte not in vistas][:2]
         ctx = contexto(trechos)
         fontes = [t.fonte for t in trechos]
         if e.get("dados_paciente"):
-            ctx = f"[{FONTE_PRONTUARIO} {e['paciente_id']}] Prontuário atualizado\n{e['dados_paciente']}\n\n{ctx}"
+            ctx = formato.contexto_com_prontuario(e["paciente_id"], e["dados_paciente"], ctx)
             fontes = [f"{FONTE_PRONTUARIO} {e['paciente_id']}"] + fontes
         aud.registrar("busca", e["execucao"], fontes=fontes, confianca=confianca,
                       scores={t.fonte: t.score for t in trechos})

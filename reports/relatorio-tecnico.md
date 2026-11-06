@@ -506,10 +506,36 @@ cobrir as três redações de todas as perguntas frequentes.
 ### 6.4 Ponta a ponta com a LLM ajustada
 
 <!-- tabela:ponta_a_ponta -->
-_(rodar python -m src.avaliacao.avaliar_assistente --com-modelo)_
+| Fluxo | Métrica | Resultado |
+|---|---|---:|
+| Perguntas clínicas (n=20) | cita a fonte correta | 90,0% |
+| | aprovada na barreira de saída | 100,0% |
+| | latência mediana | 2,0 s |
+| Fluxo do paciente (n=7) | sugestão da LLM aprovada | 7/7 |
+| | aprovada já na 1ª tentativa | 7/7 |
+| | fallback para as regras | 0/7 |
+| | latência mediana | 7,9 s |
 <!-- /tabela:ponta_a_ponta -->
 
 <!-- analise:ponta_a_ponta -->
+Com o modelo ajustado servido pelo Ollama numa GPU de 8 GB (o GGUF q4_k_m ocupa 6,9 GB), os dois grafos rodam
+de verdade sobre as 20 primeiras perguntas de teste e os 7 pacientes de demonstração
+(`python -m src.avaliacao.avaliar_assistente --com-modelo`; respostas completas em
+`outputs/avaliacao/assistente_com_modelo.json` e o log em `outputs/avaliacao/auditoria_avaliacao.jsonl`).
+
+- **No sistema completo a citação correta sobe para 90%**, contra 82,5% do modelo isolado: a busca real
+  entrega trechos ordenados por relevância, enquanto o teste do modelo usava distratores sorteados.
+- **Todas as 7 sugestões do fluxo do paciente foram aprovadas na primeira tentativa** — nenhuma precisou do
+  ciclo de correção nem do fallback para as regras.
+- **O caso do infarto (P-0002) mostra generalização além do defeito de treino**: o modelo cobriu os dois alertas
+  críticos (ECG com supra de ST e troponina) e sugeriu acionar a hemodinâmica citando o PROT-002 §4 — mesmo
+  tendo sido treinado com os 5 exemplos de ECG sem alerta (seção 11.5). Mas a mesma sugestão afirma que a
+  troponina de controle está "pendente além do horário previsto", quando está há 36 minutos de um prazo de 3
+  horas. **É uma imprecisão narrativa que nenhuma camada pega**: os alertas e as pendências corretos estão
+  no bloco calculado pelas regras logo acima da sugestão, e é por isso que o médico valida a sugestão olhando
+  para eles.
+- **Latência**: mediana de 2,0 s por pergunta e 7,9 s por paciente (a sugestão é mais longa). A primeira
+  chamada depois de iniciar o Ollama leva ~70 s para carregar o modelo na GPU.
 <!-- /analise:ponta_a_ponta -->
 
 ---

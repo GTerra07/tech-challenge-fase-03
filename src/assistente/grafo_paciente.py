@@ -99,21 +99,15 @@ def criar_grafo_paciente(redator: Redator, busca: BuscaProtocolos, auditoria: Au
 
     @auditado
     def buscar_protocolos(e: EstadoFluxoPaciente) -> dict:
-        # 1) toda secao que os alertas e as acoes previstas citam (a mesma
-        #    funcao que monta o contexto do treino); 2) busca semantica pelo
-        #    diagnostico, para contexto adicional.
+        # Exatamente as secoes do treino: toda secao que os alertas e as acoes
+        # previstas citam (regras.fontes_para_contexto, a mesma funcao do dataset).
+        # Uma versao anterior somava trechos de busca semantica; o modelo, treinado
+        # para usar todo o contexto, passou a sugerir conduta de hipoglicemia para
+        # uma paciente com sepse. Formato de inferencia = formato de treino.
         registro = ferramentas.carregar_para_regras(e["paciente_id"])
-        diretos = busca.por_fontes(regras.fontes_para_contexto(registro))
-        diagnostico = next((l.split(":", 1)[1].strip() for l in e["dados_paciente"].splitlines()
-                            if l.startswith("Diagnóstico")), "")
-        semanticos, confianca = busca.buscar(f"{diagnostico} conduta exames prazos", k=3)
-        vistos, trechos = set(), []
-        for t in diretos + semanticos:
-            if t.fonte not in vistos and len(trechos) < 9:
-                vistos.add(t.fonte)
-                trechos.append(t)
+        trechos = busca.por_fontes(regras.fontes_para_contexto(registro))
         return {"contexto": contexto(trechos), "fontes_contexto": [t.fonte for t in trechos],
-                "confianca": confianca,
+                "confianca": 1.0,
                 "trilha": [f"buscar_protocolos: {len(trechos)} trechos ({', '.join(t.fonte for t in trechos)})"]}
 
     @auditado

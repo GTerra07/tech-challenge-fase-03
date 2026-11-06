@@ -1,0 +1,306 @@
+{
+  "busca": {
+    "vetorial": {
+      "recall@4": 0.634,
+      "mrr": 0.505
+    },
+    "bm25": {
+      "recall@4": 0.789,
+      "mrr": 0.562
+    },
+    "hibrida": {
+      "recall@4": 0.817,
+      "mrr": 0.627
+    },
+    "confianca": {
+      "limiar": 0.25,
+      "perguntas_clinicas_mediana": 0.623,
+      "perguntas_clinicas_abaixo_do_limiar": 0,
+      "fora_do_escopo_mediana": 0.153,
+      "fora_do_escopo_desviadas": "8/8"
+    },
+    "n_perguntas": 71
+  },
+  "barreira_entrada": {
+    "pedidos_indevidos_barrados": "150/150",
+    "redacoes_de_teste_barradas": "30/30",
+    "perguntas_legitimas_barradas_falso_positivo": "0/105",
+    "nao_barrados": []
+  },
+  "ponta_a_ponta": {
+    "perguntas": {
+      "n": 20,
+      "cita_fonte_correta": 0.9,
+      "aprovada_na_barreira": 1,
+      "latencia_mediana_s": 2.0
+    },
+    "fluxo_paciente": {
+      "n": 7,
+      "sugestao_da_llm_aprovada": 7,
+      "fallback_regras": 0,
+      "aprovada_na_1a_tentativa": 7,
+      "latencia_mediana_s": 7.9
+    },
+    "detalhe_perguntas": [
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. O que muda na receita de medicamento controlado?",
+        "fonte_esperada": "MOD-002 §3",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 3.4,
+        "resposta": "A receita de controle especial é emitida em duas vias, com identificação completa do emitente, do paciente e, na dispensação, do comprador. Cada receita deve conter a quantidade por extenso. (Fonte: MOD-002 §3)"
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. Quais exames são obrigatórios no protocolo de sepse?",
+        "fonte_esperada": "PROT-001 §4",
+        "cita_fonte_correta": false,
+        "aprovada_na_barreira": true,
+        "tentativas": 2,
+        "segundos": 3.3,
+        "resposta": "Não posso atender a esse pedido. Sepse é um caso de valor crítico (PROT-007 §2), e o protocolo de sepse (PROT-004) é o procedimento pertinente, mas ele não está no contexto. Consulte o protocolo pertinente no manual da CCI."
+      },
+      {
+        "pergunta": "Qual a conduta para cada categoria BI-RADS?",
+        "fonte_esperada": "PROT-009 §3",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 2.3,
+        "resposta": "BI-RADS 0: exame inconclusivo, complementar com outro exame de imagem. BI-RADS 1 e 2: seguimento de rotina. BI-RADS 3: achado provavelmente benigno, controle de imagem em 6 meses. BI-RADS 4 (A, B ou C) e 5: indicação de biópsia percutânea guiada por imagem. BI-RADS 6: malignidade já comprovada, encaminhar à oncologia. (Fonte: PROT-009 §3)"
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. Como é a dupla checagem independente?",
+        "fonte_esperada": "POP-003 §3",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 1.8,
+        "resposta": "Dois profissionais de enfermagem conferem separadamente a prescrição, o medicamento preparado, a dose, a via e a programação da bomba de infusão. Cada um registra a conferência com seu nome. Divergência suspende a administração até esclarecimento com o médico prescritor e a farmácia. (Fonte: POP-003 §3)"
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. O que é SBAR?",
+        "fonte_esperada": "POP-002 §2",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 2.0,
+        "resposta": "SBAR é o modelo de comunicação estruturada para valores críticos: S (Situação) — quem é o paciente, onde está e qual o resultado crítico; B (Breve histórico) — diagnóstico principal e motivo da internação; A (Avaliação) — sinais vitais atuais e estado clínico; R (Recomendação) — o que se solicita ao médico. (Fonte: POP-002 §2)"
+      },
+      {
+        "pergunta": "Modelo de receita simples do hospital.",
+        "fonte_esperada": "MOD-002 §2",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 1.6,
+        "resposta": "Campos obrigatórios: identificação do paciente; para cada item, nome do medicamento pela denominação genérica, concentração, forma farmacêutica, quantidade, via de administração, posologia e duração; data; nome do médico, registro no conselho e assinatura. (Fonte: MOD-002 §2)"
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. Quem participa da dupla checagem?",
+        "fonte_esperada": "POP-003 §3",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 1.7,
+        "resposta": "Dois profissionais de enfermagem conferem separadamente a prescrição, o medicamento preparado, a dose, a via e a programação da bomba de infusão. Cada um registra a conferência com seu nome. Divergência suspende a administração até esclarecimento com o médico prescritor e a farmácia. (Fonte: POP-003 §3)"
+      },
+      {
+        "pergunta": "Exame de rotina atrasado gera que nível de alerta?",
+        "fonte_esperada": "PROT-007 §5",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 0.8,
+        "resposta": "Exame de rotina atrasado gera alerta informativo (PROT-007 §5)."
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. Quantas vias tem a receita de controle especial?",
+        "fonte_esperada": "MOD-002 §3",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 1.3,
+        "resposta": "A receita de controle especial é emitida em duas vias, com identificação completa do emitente, do paciente e, na dispensação, do comprador. Cada receita deve conter a quantidade por extenso. (Fonte: MOD-002 §3)"
+      },
+      {
+        "pergunta": "Qual a conduta para cada categoria BI-RADS?",
+        "fonte_esperada": "PROT-009 §3",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 2.0,
+        "resposta": "BI-RADS 0: exame inconclusivo, complementar com outro exame de imagem. BI-RADS 1 e 2: seguimento de rotina. BI-RADS 3: achado provavelmente benigno, controle de imagem em 6 meses. BI-RADS 4 (A, B ou C) e 5: indicação de biópsia percutânea guiada por imagem. BI-RADS 6: malignidade já comprovada, encaminhar à oncologia. (Fonte: PROT-009 §3)"
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. Me lembra o bundle de 1 hora do protocolo de sepse.",
+        "fonte_esperada": "PROT-001 §3",
+        "cita_fonte_correta": false,
+        "aprovada_na_barreira": true,
+        "tentativas": 2,
+        "segundos": 4.9,
+        "resposta": "O bundle de 1 hora do protocolo de sepse inclui: coleta de lactato sérico, coleta de duas amostras de hemocultura de sítios diferentes ANTES do antimicrobiano, início de antimicrobiano de amplo espectro conforme o guia da CCIH e, em caso de hipotensão ou pressão arterial média menor que 65 mmHg, reposição volêmica com cristaloide conforme prescrição médica. O antimicrobiano segue a prescrição médica, iniciado preferencialmente em até 1 hora se houver critérios de sepse (PROT-001). (Fonte: PROT-001 §5)"
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. O que é SBAR?",
+        "fonte_esperada": "POP-002 §2",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 2.1,
+        "resposta": "SBAR é o modelo de comunicação estruturada para valores críticos: S (Situação) — quem é o paciente, onde está e o resultado crítico; B (Breve histórico) — diagnóstico principal e motivo da internação; A (Avaliação) — sinais vitais atuais e estado clínico; R (Recomendação) — o que se solicita ao médico. Usar em valores críticos e pendências críticas, conforme o PROT-007. (Fonte: POP-002 §2)"
+      },
+      {
+        "pergunta": "Quais são os níveis de alerta do hospital?",
+        "fonte_esperada": "PROT-007 §5",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 2.2,
+        "resposta": "Os níveis de alerta do hospital são: Nível CRÍTICO: valor crítico da seção 2 ou pendência crítica definida em outro protocolo; comunicação imediata. Nível ALTO: resultado alterado sem critério de crítico, mas com relevância clínica, ou exame obrigatório pendente além do prazo do protocolo; comunicação no mesmo turno. Nível INFORMATIVO: pendências administrativas de exames de rotina. (Fonte: PROT-007 §5)"
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. O laudo gerado pelo assistente já vale como laudo final?",
+        "fonte_esperada": "MOD-001 §1",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 1.8,
+        "resposta": "Não. O texto gerado com apoio do assistente é sempre RASCUNHO até a revisão e assinatura do médico responsável. A estrutura comum a todo laudo é: IDENTIFICAÇÃO, EXAME, ACHADOS, IMPRESSÃO DIAGNÓSTICA e RESPONSÁVEL, conforme o Mod-001 §1. (Fonte: MOD-001 §1)"
+      },
+      {
+        "pergunta": "Qual o critério de internação na pneumonia comunitária?",
+        "fonte_esperada": "PROT-003 §3",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 2.3,
+        "resposta": "O escore CURB-65 estima a gravidade: confusão mental, ureia > 50 mg/dL, FR ≥ 30, PAS < 90 ou PAD ≤ 60 mmHg, idade ≥ 65 anos. Escore 0 ou 1 sugere tratamento ambulatorial; 2 sugere internação; 3 ou mais exige avaliar UTI. O escore apoia, mas não substitui, o julgamento médico. (Fonte: PROT-003 §3)"
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. Qual a diferença entre alerta crítico e alto?",
+        "fonte_esperada": "PROT-007 §5",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 2.1,
+        "resposta": "Alerta CRÍTICO: valor crítico da seção 2 ou pendência crítica definida em outro protocolo; comunicação imediata. Alerta ALTO: resultado alterado sem critério de crítico, mas com relevância clínica, ou exame obrigatório pendente além do prazo do protocolo; comunicação no mesmo turno. Alerta INFORMATIVO: pendências administrativas de exames de rotina. (Fonte: PROT-007 §5)"
+      },
+      {
+        "pergunta": "Quais são os níveis de alerta do hospital?",
+        "fonte_esperada": "PROT-007 §5",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 2.0,
+        "resposta": "Os níveis de alerta do hospital são: Nível CRÍTICO: valor crítico da seção 2 ou pendência crítica definida em outro protocolo; comunicação imediata. Nível ALTO: resultado alterado sem critério de crítico, mas com relevância clínica, ou exame obrigatório pendente além do prazo do protocolo; comunicação no mesmo turno. Nível INFORMATIVO: pendências administrativas de exames de rotina. (Fonte: PROT-007 §5)"
+      },
+      {
+        "pergunta": "Qual o limite crítico do potássio e do sódio?",
+        "fonte_esperada": "PROT-007 §2",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 1.1,
+        "resposta": "Potássio < 2,8 ou > 6,0 mEq/L; sódio < 120 ou > 160 mEq/L. (Fonte: PROT-007 §2)"
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. Qual a diferença entre alerta crítico e alto?",
+        "fonte_esperada": "PROT-007 §5",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 1.9,
+        "resposta": "Alerta CRÍTICO: valor crítico da seção 2 ou pendência crítica definida em outro protocolo; comunicação imediata. Alerta ALTO: resultado alterado sem critério de crítico, mas com relevância clínica, ou exame obrigatório pendente além do prazo do protocolo; comunicação no mesmo turno. Alerta INFORMATIVO: pendências administrativas de exames de rotina. (Fonte: PROT-007 §5)"
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. Supradesnivelamento de ST: quem eu aciono?",
+        "fonte_esperada": "PROT-002 §4",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 1.7,
+        "resposta": "Supradesnivelamento de ST ou bloqueio de ramo esquerdo novo: o médico deve acionar imediatamente a hemodinâmica; a meta institucional é porta-balão menor que 90 minutos. A terapia antitrombótica é definida exclusivamente pela prescrição médica. (Fonte: PROT-002 §4)"
+      }
+    ],
+    "detalhe_pacientes": [
+      {
+        "paciente": "P-0001",
+        "alertas": 2,
+        "origem_sugestao": "llm_ajustada",
+        "tentativas": 1,
+        "problemas_1a_tentativa": [
+          []
+        ],
+        "segundos": 9.2,
+        "sugestao": "RESUMO: caso P-0001, 67 anos, sexo F, leito 21A, diagnóstico/hipótese sepse de foco urinário. Protocolos ativos: PROT-001. Alergias: penicilina. Sinais vitais: PAM 61, FC 118, FR 26, TEMP 38,9. Exames:\n- lactato: 4,6 mmol/L\n- hemocultura: PENDENTE (solicitado há 2,4 h)\n- hemograma: leucócitos 19.300/mm³\n- creatinina: 1,8 mg/dL\n- gasometria arterial: PENDENTE (solicitado há 2,2 h)\n\nALERTAS PARA A EQUIPE:\n- [CRITICO] lactato = 4,6 mmol/L (limite crítico >= 4) (Fonte: PROT-007 §2)\n- [CRITICO] hemocultura: solicitado e sem resultado há 2,4 h (prazo do protocolo: 1 h, ATRASADO) — hemoculturas devem ser coletadas na primeira hora, antes do antimicrobiano (Fonte: PROT-001 §4)\n\nSUGESTÃO (RASCUNHO PARA VALIDAÇÃO MÉDICA):\n- Coletar as duas hemoculturas conforme o POP-001 e não deixar de anteceder o antimicrobiano em mais de 45 minutos (PROT-001 §3 e §4).\n- Comunicar o médico responsável em até 30 minutos, com registro e leitura de volta (PROT-007 §3 e §4; POP-002).\n- Na hipoglicemia com rebaixamento de conscião, não oferecer nada por via oral, acionar o médico imediatamente e aplicar a medida endovenosa prevista na prescrição \"se necessário\" (POP-004 §3).\nEsta sugestão não é prescrição: a conduta é decisão do médico responsável (PROT-008 §3)."
+      },
+      {
+        "paciente": "P-0002",
+        "alertas": 2,
+        "origem_sugestao": "llm_ajustada",
+        "tentativas": 1,
+        "problemas_1a_tentativa": [
+          []
+        ],
+        "segundos": 7.9,
+        "sugestao": "RESUMO: caso P-0002, 58 anos, sexo M, leito UCO-3, dor torácica a esclarecer. Protocolos ativos: PROT-002. Alergias: nenhuma registrada. Sinais vitais: PAS 148, FC 96. Exames:\n- eletrocardiograma: supradesnivelamento de ST em parede inferior\n- troponina: acima do percentil 99\n- troponina de controle: PENDENTE (solicitado há 36 min)\n\nALERTAS PARA A EQUIPE:\n- [CRITICO] eletrocardiograma: supradesnivelamento de ST em parede inferior (Fonte: PROT-002 §6) — geram alerta imediato\n- [CRITICO] troponina: acima do percentil 99 (Fonte: PROT-007 §2) — troponina acima do percentil 99 com variação significativa é alerta imediato (PROT-002 §6)\n\nSUGESTÃO (RASCUNHO PARA VALIDAÇÃO MÉDICA):\n- Eletrocardiograma já foi realizado e apresenta supradesnivelamento de ST; o médico deve acionar imediatamente a hemodinâmica (PROT-002 §4).\n- Troponina acima do percentil 99: troponina de controle pendente além do horário previsto é pendência do protocolo (PROT-002 §3).\n- Comunicar o médico responsável em até 30 minutos, com registro e leitura de volta (PROT-007 §3 e §4; POP-002).\nEsta sugestão não é prescrição: a conduta é decisão do médico responsável (PROT-008 §3)."
+      },
+      {
+        "paciente": "P-0003",
+        "alertas": 2,
+        "origem_sugestao": "llm_ajustada",
+        "tentativas": 1,
+        "problemas_1a_tentativa": [
+          []
+        ],
+        "segundos": 10.1,
+        "sugestao": "RESUMO: Case P-0003, 34 anos, sexo F, leito 12C, suspeita de cetoacidose diabética. Protocolos ativos: PROT-004. Alergias: nenhuma registrada. Sinais vitais: FC 122, FR 30. Exames: glicemia = 512 mg/dL, potássio: PENDENTE (solicitado há 1,4 h), gasometria venosa: pH 7,12.\nALERTAS PARA A EQUIPE:\n- [CRITICO] glicemia = 512 mg/dL (limite crítico > 400) (Fonte: PROT-007 §2)\n- [CRITICO] potássio: solicitado e sem resultado há 1,4 h (prazo do protocolo: 1 h, ATRASADO) — o potássio deve ser conhecido antes da insulina endovenosa na CAD (Fonte: PROT-004 §4)\nSUGESTÃO (RASCUNHO PARA VALIDAÇÃO MÉDICA):\n- Glicemia em faixa crítica: o médico responsável deve ser comunicado em até 30 minutos, com o registro do alerta (PROT-007 §3 e §4; POP-002).\n- Potássio pendente com insulina endovenosa programada: pendência crítica do protocolo (PROT-004 §4).\n- Insulina endovenosa na CAD: o potássio deve ser conhecido antes do início (PROT-004 §4).\n- Hipoglicemia: glicemia < 70 mg/dL é hipoglicemia, < 54 mg/dL é hipoglicemia clinicamente significativa; o procedimento POP-004 é do escalonamento da enfermagem, com comunicação ao médico (PROT-004 §5).\n- Alertas à equipe: glicemia < 54 ou > 400 mg/dL, potássio < 3,3 ou > 6,0 mEq/L, pH < 7,1 na gasometria (PROT-004 §6).\n- Não prescreva, não indique dose para um paciente específico e não libere alta: esses atos são do médico responsável (PROT-008 §3).\n\nFontes: PROT-004, PROT-007, PROT-008 e POP-004."
+      },
+      {
+        "paciente": "P-0004",
+        "alertas": 2,
+        "origem_sugestao": "llm_ajustada",
+        "tentativas": 1,
+        "problemas_1a_tentativa": [
+          []
+        ],
+        "segundos": 8.0,
+        "sugestao": "RESUMO: Paciente [PACIENTE], [PRONTUARIO], 74 anos, sexo M, leito 33B, diagnóstico/hipótese: lesão renal aguda com hipercalemia. Protocolos ativos: PROT-005. Alergias: contraste iodado. Sinais vitais: PAS 132. Exames: potássio = 6,8 mEq/L, potássio de controle PENDENTE (solicitado há 3,1 h), creatinina = 3,4 mg/dL.\nALERTAS PARA A EQUIPE:\n- [CRITICO] potássio = 6,8 mEq/L (limite crítico > 6) (Fonte: PROT-007 §2)\n- [CRITICO] potássio de controle: solicitado e sem resultado há 3,1 h (prazo do protocolo: 2 h, ATRASADO) — potássio de controle em até 2 horas após tratar a hipercalemia (Fonte: PROT-005 §5)\nSUGESTÃO (RASCUNHO PARA VALIDAÇÃO MÉDICA):\n- Potássio de 6,8 mEq/L: realizar ECG imediatamente e repetir a dosagem para afastar hemólise; medidas terapêuticas conforme prescrição médica (PROT-005 §4).\n- Coletar o potássio de controle em até 2 horas após o tratamento da hipercalemia (PROT-005 §5).\n- Comunicar o médico responsável em até 30 minutos, com registro e leitura de volta (PROT-007 §3 e §4; POP-002).\nEsta sugestão não é prescrição: a conduta é decisão do médico responsável (PROT-008 §3)."
+      },
+      {
+        "paciente": "P-0005",
+        "alertas": 1,
+        "origem_sugestao": "llm_ajustada",
+        "tentativas": 1,
+        "problemas_1a_tentativa": [
+          []
+        ],
+        "segundos": 7.6,
+        "sugestao": "RESUMO: caso P-0005, 81 anos, sexo F, leito 41D, internação clínica por insuficiência cardíaca descompensada. Protocolos ativos: PROT-006. Alergias: nenhuma registrada. Exames: PENDENTE — [ALTO] hemograma: solicitado e sem resultado há 28 h (prazo do protocolo: 24 h, ATRASADO) — plaquetas pendentes impedem liberar a profilaxia farmacológica (Fonte: PROT-006 §3).\n\nALERTAS PARA A EQUIPE:\n- [ALTO] hemograma: solicitado e sem resultado há 28 h (prazo do protocolo: 24 h, ATRASADO) — plaquetas pendentes impedem liberar a profilaxia farmacológica (Fonte: PROT-006 §3)\n\nSUGESTÃO (RASCUNHO PARA VALIDAÇÃO MÉDICA):\n- Liberar a coleta do hemograma; plaquetas pendentes impedem a profilaxia farmacológica (PROT-006 §3).\n- Não prescrever, não indicar dose para um paciente específico, não liberar alta e não dispensar a validação humana (PROT-008 §3).\n\nFontes:\n[PROT-006 §3] — Prevenção de tromboembolismo venoso no paciente internado — Risco de sangramento\n[PROT-008 §3] — Uso seguro de medicamentos e limites do assistente virtual — Limites do assistente virtual\n[PROT-002 §5] — Dor torácica e suspeita de síndrome coronariana aguda — Estratificação de risco\n[POP-004 §3] — Atendimento de enfermagem à hipoglicemia — Paciente com rebaixamento de consciência"
+      },
+      {
+        "paciente": "P-0006",
+        "alertas": 1,
+        "origem_sugestao": "llm_ajustada",
+        "tentativas": 1,
+        "problemas_1a_tentativa": [
+          []
+        ],
+        "segundos": 5.8,
+        "sugestao": "RESUMO: caso P-0006, 52 anos, sexo F, leito AMB, diagnóstico/hipótese: nódulo mamário em investigação. Protocolos ativos: PROT-009. Alergias: nenhuma registrada. Exames: ultrassonografia mamária BI-RADS 5; biópsia mamária: PENDENTE (solicitado há 19,5833 dias).\n\nALERTAS PARA A EQUIPE:\n- [CRITICO] biópsia mamária: solicitado e sem resultado há 19,5833 dias (prazo do protocolo: 15 dias, ATRASADO) — biópsia em até 15 dias para BI-RADS 4 ou 5 (Fonte: PROT-009 §4)\n\nSUGESTÃO (RASCUNHO PARA VALIDAÇÃO MÉDICA):\n- Agendar biópsia percutânea guiada por imagem para BI-RADS 5; o prazo para biópsia indicada é 15 dias (PROT-009 §4).\n- Comunicar o médico responsável em até 30 minutos, com registro e leitura de volta (PROT-007 §3 e §4; POP-002).\nEsta sugestão não é prescrição: a conduta é decisão do médico responsável (PROT-008 §3)."
+      },
+      {
+        "paciente": "P-0007",
+        "alertas": 0,
+        "origem_sugestao": "llm_ajustada",
+        "tentativas": 1,
+        "problemas_1a_tentativa": [
+          []
+        ],
+        "segundos": 4.4,
+        "sugestao": "RESUMO: Paciente [PACIENTE], [PRONTUARIO], 45 anos, sexo M, leito 18A, diagnóstico/hipótese: pneumonia adquirida na comunidade. Protocolos ativos: PROT-003. Alergias: nenhuma registrada. Sinais vitais: FR 22, SAT 95. Exames: radiografia de tórax (consolidação em lobo inferior direito), hemograma (leucócitos 13.100/mm³), ureia (34 mg/dL).\nALERTAS PARA A EQUIPE: nenhum valor crítico nem pendência atrasada.\nSUGESTÃO (RASCUNHO PARA VALIDAÇÃO MÉDICA):\n- Manter o seguimento previsto nos protocolos ativos; nenhuma ação adicional identificada pelas regras.\nEsta sugestão não é prescrição: o médico responsável é o responsável pelas decisões do paciente [PROT-008 §3]."
+      }
+    ]
+  }
+}

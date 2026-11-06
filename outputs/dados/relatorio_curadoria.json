@@ -1,38 +1,38 @@
 {
   "entrada": {
-    "interno": 872,
+    "interno": 1141,
     "pubmedqa": 1000,
     "medquad": 632
   },
   "removidos": {
-    "duplicata (mesma entrada)": {
-      "interno": 46
-    },
     "acima do contexto de treino": {
       "interno": 2
+    },
+    "duplicata (mesma entrada)": {
+      "interno": 44
     },
     "marcação residual": {
       "pubmedqa": 3
     }
   },
   "saida": {
-    "interno": 824,
+    "interno": 1095,
     "pubmedqa": 997,
     "medquad": 632
   },
   "divisao": {
     "treino": {
-      "pubmedqa": 501,
+      "interno": 831,
       "medquad": 400,
-      "interno": 587
+      "pubmedqa": 501
     },
     "validacao": {
-      "interno": 26,
+      "interno": 50,
       "medquad": 50,
       "pubmedqa": 50
     },
     "teste": {
-      "interno": 211,
+      "interno": 214,
       "medquad": 100,
       "pubmedqa": 200
     }

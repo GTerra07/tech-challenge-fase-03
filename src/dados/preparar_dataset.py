@@ -23,6 +23,7 @@ from collections import Counter, defaultdict
 from src.config import PASTA_BRUTO, PASTA_EXTERNO, PASTA_OUTPUTS, PASTA_PROCESSADO, SEMENTE
 from src.avaliacao.metricas import fontes_citadas
 from src.dados import conhecimento_interno as ci
+from src.dados import perguntas_paciente
 from src.dados.curadoria import Relatorio, curar
 from src.dados.documentos import carregar_secoes, indice_por_fonte
 from src.dados.gerador_interno import POR_TEMPLATE_RECUSA, gerar_exportacoes
@@ -87,7 +88,9 @@ def exemplos_internos(rng: random.Random) -> tuple[list[dict], dict[str, list[st
             exemplos.append(_ex(f"{r['id']}-v{v}", "interno", "pergunta", fmt.INSTRUCAO_PERGUNTA,
                                 fmt.entrada_pergunta(_contexto(ctx), pergunta),
                                 f"{r['resposta']} (Fonte: {r['fonte']})", r["id"], divisao=divisao, fonte=r["fonte"]))
-        if rng.random() < 0.5:
+        # v1 usava 0,5 e o modelo ficou cauteloso demais (12,5% de abstencoes
+        # com a resposta no contexto); v2 reduz a proporcao de negativos.
+        if rng.random() < 0.35:
             ctx = distratores({alvo.fonte}, 2)
             exemplos.append(_ex(f"{r['id']}-sem", "interno", "sem_contexto", fmt.INSTRUCAO_PERGUNTA,
                                 fmt.entrada_pergunta(_contexto(ctx), pergunta), ci.RESPOSTA_SEM_CONTEXTO,
@@ -111,12 +114,22 @@ def exemplos_internos(rng: random.Random) -> tuple[list[dict], dict[str, list[st
         p = r["paciente"]
         # Mesmas secoes que o grafo coloca no contexto (regras.fontes_para_contexto):
         # a resposta de referencia so cita o que esta na entrada.
-        fontes = set(regras.fontes_para_contexto(p))
-        fontes |= {f"{prot} §1" for prot in p["protocolos_ativos"] if f"{prot} §1" in por_fonte}
-        ctx = [por_fonte[f] for f in sorted(fontes) if f in por_fonte]
+        ctx = [por_fonte[f] for f in regras.fontes_para_contexto(p) if f in por_fonte]
         exemplos.append(_ex(r["id"], "interno", "caso", fmt.INSTRUCAO_CASO,
                             fmt.entrada_caso(contexto_paciente(p), anonimizar(bloco_achados(p)), _contexto(ctx)),
                             anonimizar(sugestao_de_referencia(p)), fonte=r["fonte"]))
+
+        # (v2) Pergunta do medico sobre este paciente, com o prontuario no contexto no
+        # formato exato do grafo de perguntas: resumo + achados, depois as secoes que
+        # os achados citam e 1-2 trechos que a busca traria pela pergunta (distratores).
+        pergunta, resp = perguntas_paciente.sortear(p, rng)
+        dados = contexto_paciente(p) + "\n" + anonimizar(bloco_achados(p))
+        trechos_q = [por_fonte[f] for f in regras.fontes_da_pergunta_paciente(p) if f in por_fonte]
+        trechos_q += distratores({s.fonte for s in trechos_q}, rng.randint(1, 2))
+        exemplos.append(_ex(f"{r['id']}-pergunta", "interno", "pergunta_paciente", fmt.INSTRUCAO_PERGUNTA,
+                            fmt.entrada_pergunta(fmt.contexto_com_prontuario(p["id"], dados, _contexto(trechos_q)),
+                                                 pergunta),
+                            anonimizar(resp), r["id"], fonte=f"{fmt.FONTE_PRONTUARIO} {p['id']}"))
 
     # Modelos de laudo e de receita
     for r in _ler("laudos.jsonl"):

@@ -41,7 +41,6 @@ import json, os, sys
 from pathlib import Path
 RAIZ = Path.cwd().parent if Path.cwd().name == 'notebooks' else Path.cwd()
 os.chdir(RAIZ); sys.path.insert(0, str(RAIZ))
-sys.stdout.reconfigure(encoding='utf-8')
 
 from IPython.display import Markdown, Image, display
 from langgraph.types import Command
@@ -52,6 +51,8 @@ from src.assistente.grafo_pergunta import criar_grafo_pergunta
 from src.prontuario import banco
 from src.rag.indice import BuscaProtocolos
 from src.seguranca.auditoria import Auditoria
+import logging
+logging.getLogger('assistente').setLevel(logging.WARNING)   # sem eco no console; tudo vai para o log de auditoria
 
 banco.criar_banco()                       # prontuário de demonstração (7 pacientes sintéticos)
 auditoria = Auditoria()                   # logs/auditoria.jsonl
