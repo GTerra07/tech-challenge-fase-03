@@ -580,6 +580,44 @@ natureza, absorve picos pela fila.
 <!-- analise:limitacoes -->
 <!-- /analise:limitacoes -->
 
+### 11.1 Sobre os dados
+
+- **Os dados internos são sintéticos e pequenos.** São 9 protocolos, 4 POPs e 2 modelos, escritos para o
+  trabalho. Um hospital real tem centenas de documentos, com redação heterogênea, versões conflitantes e
+  tabelas. O pipeline foi desenhado para isso (seção citável, metadado de versão, reindexação), mas não foi
+  testado nessa escala.
+- **Perguntas frequentes com três redações cada** não representam a variedade de como médicos realmente
+  perguntam. O teste usa redações nunca vistas, mas escritas pelo mesmo autor das de treino.
+- **Os públicos estão em inglês.** PubMedQA e MedQuAD trazem conhecimento biomédico e a métrica de acurácia,
+  mas o assistente responde em português; a transferência entre idiomas não foi medida isoladamente.
+
+### 11.2 Sobre a anonimização
+
+A anonimização é por regras (padrões estruturados + nomes por contexto e por lista de prenomes). Ela é
+provada contra o gabarito do gerador, mas **o gabarito sai da mesma população de nomes da lista**. Um nome
+estrangeiro sem título antes ("conversei com Yuki Tanaka") passaria. Em produção, a etapa precisaria de um
+reconhecedor de entidades treinado para português clínico (o spaCy da Fase 2 é o ponto de partida) e de
+revisão amostral humana — e, ainda assim, o modelo local é a garantia que não depende da anonimização ser
+perfeita.
+
+### 11.3 Sobre a avaliação
+
+- **A rubrica é automática.** Ela mede o que é verificável (fonte, recusa, dose, cobertura de alertas,
+  estrutura), não a qualidade clínica do texto. A validação de verdade seria médicos avaliando uma amostra
+  às cegas (base × ajustado) — o registro da validação humana no fluxo é desenhado para virar esse dado.
+- **A barreira de entrada é por regras**: barrou todos os pedidos indevidos do teste, mas um ataque
+  paráfrase-a-paráfrase (*red teaming*) não foi feito. Por isso ela é uma camada entre quatro, e não a única.
+- **A busca erra em ~18% das perguntas** (recall@4 de 0,817). Quando erra, o modelo recebe um contexto sem a
+  resposta e, se aprendeu bem, diz que não há informação — o que é seguro, mas não útil. Melhorar a busca
+  (re-ranking por *cross-encoder*, perguntas sintéticas por seção no índice) é o próximo passo de maior
+  retorno.
+
+### 11.4 Sobre o escopo clínico
+
+O assistente não faz diagnóstico nem escolhe tratamento: ele aponta o que o protocolo exige e o que está
+pendente, e sugere o próximo passo do protocolo como rascunho. A decisão é sempre do médico. Isso é
+deliberado — e o mesmo princípio das Fases 1 e 2: o modelo apoia, o médico decide.
+
 ---
 
 ## 12. Conclusão
