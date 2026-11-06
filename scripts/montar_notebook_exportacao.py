@@ -32,7 +32,8 @@ code(f"""
 from google.colab import drive
 drive.mount('/content/drive')
 import os, sys, subprocess
-PASTA_DRIVE = '/content/drive/MyDrive/tech-challenge-fase-03'
+VERSAO = 'v2'   # pasta do adaptador no Drive ('' para o v1, que ficou na raiz)
+PASTA_DRIVE = '/content/drive/MyDrive/tech-challenge-fase-03' + (f'/{{VERSAO}}' if VERSAO else '')
 REPO = '/content/tech-challenge-fase-03'
 if not os.path.exists(REPO):
     subprocess.run(['git', 'clone', '--depth', '1', '{REPO}', REPO], check=True)
