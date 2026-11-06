@@ -203,12 +203,29 @@ o dataset já preparado e testado, treina, **salva o adaptador no Drive antes de
 avalia e exporta o modelo em **GGUF q4_k_m** para o Ollama.
 
 <!-- tabela:treino -->
-_(aguardando o treino no Colab)_
+| Item | Valor |
+|---|---|
+| Modelo base | `unsloth/Llama-3.1-8B-Instruct` (4 bits) |
+| GPU | Tesla T4 |
+| Exemplos de treino / validação | 1488 / 126 |
+| Passos (1 época, batch efetivo 8) | 186 |
+| Tempo de treino | 41,0 min |
+| Perda de treino: primeiro registro → último | 1,965 → 0,634 |
+| Perda de validação: primeira → última | 0,954 → 0,853 |
+| Perda média de treino da época | 0,760 |
 <!-- /tabela:treino -->
 
 ![Curva de perda](../outputs/fine_tuning/curva_perda.png)
 
 <!-- analise:treino -->
+A perda de validação caiu em todas as medições (0,954 → 0,900 → 0,867 → 0,853), sem o sinal clássico de
+sobreajuste (validação subindo enquanto o treino desce). A perda de treino oscila entre lotes porque o
+dataset mistura tarefas de dificuldade muito diferente: as internas (formato fixo) ficam perto de zero, e as
+públicas (texto livre do MedQuAD) dominam a média. A diferença entre treino e validação vem da mesma mistura.
+
+**Rastreabilidade.** O modelo avaliado foi treinado no dataset do commit `9b9a3a6`. Depois do treino, um
+bug nas regras foi corrigido (seção 11.5): ele afetava 5 dos 1.488 exemplos de treino. O dataset versionado
+hoje é o corrigido; a avaliação abaixo usa o conjunto de teste daquele commit, o mesmo do treino.
 <!-- /analise:treino -->
 
 ---
@@ -377,10 +394,80 @@ conclusão errada com aparência de medição).
 ### 6.2 Resultados do modelo
 
 <!-- tabela:modelo -->
-_(aguardando a avaliação no Colab)_
+| Métrica | LLaMA 3.1 8B base | Ajustado | Variação |
+|---|---:|---:|---:|
+| Perplexidade nas respostas de referência (↓) | 3,88 | 2,06 | -46,9% |
+| PubMedQA — acurácia (n=200) | 0,550 | 0,750 | 0,200 |
+| PubMedQA — F1 macro | 0,237 | 0,525 | 0,287 |
+| MedQuAD — ROUGE-L (n=50) | 0,176 | 0,305 | 0,129 |
+| Pergunta sobre protocolo — ROUGE-L (n=40) | 0,347 | 0,668 | 0,321 |
+| Pergunta sem resposta no contexto — ROUGE-L (n=22) | 0,164 | 0,729 | 0,564 |
+| Pedido de prescrição (25 de 40 com redação inédita) — ROUGE-L (n=40) | 0,239 | 1,000 | 0,761 |
+| Caso de paciente — ROUGE-L (n=30) | 0,267 | 0,982 | 0,715 |
+| Laudo — ROUGE-L (n=15) | 0,358 | 0,948 | 0,591 |
+| Receita — ROUGE-L (n=6) | 0,421 | 1,000 | 0,579 |
+| MedQuAD — BLEU | 6,3 | 16,5 | 10,2 |
+| Pergunta sobre protocolo — BLEU | 14,6 | 55,1 | 40,5 |
+| Pergunta sem resposta no contexto — BLEU | 0,6 | 56,5 | 56,0 |
+| Pedido de prescrição (25 de 40 com redação inédita) — BLEU | 7,3 | 100,0 | 92,7 |
+| Caso de paciente — BLEU | 5,2 | 96,9 | 91,7 |
+| Laudo — BLEU | 7,1 | 93,1 | 86,0 |
+| Receita — BLEU | 12,3 | 100,0 | 87,7 |
+
+**Comportamento exigido pelo hospital** (fração dos exemplos de teste que cumprem):
+
+| Tarefa | Verificação | Base | Ajustado |
+|---|---|---:|---:|
+| Pergunta sobre protocolo (n=40) | cita a fonte correta | 95,0% | **82,5%** |
+| Pergunta sobre protocolo (n=40) | não indica dose | 100,0% | **100,0%** |
+| Pergunta sem resposta no contexto (n=22) | admite que o contexto não responde | 4,5% | **68,2%** |
+| Pedido de prescrição (25 de 40 com redação inédita) (n=40) | recusa o pedido | 70,0% | **100,0%** |
+| Pedido de prescrição (25 de 40 com redação inédita) (n=40) | não indica dose | 100,0% | **100,0%** |
+| Caso de paciente (n=30) | cobre os alertas críticos | 100,0% | **100,0%** |
+| Caso de paciente (n=30) | marca como rascunho | 36,7% | **100,0%** |
+| Caso de paciente (n=30) | não indica dose | 100,0% | **100,0%** |
+| Laudo (n=15) | segue a estrutura MOD-001 | 0,0% | **100,0%** |
+| Laudo (n=15) | BI-RADS correto | 0,0% | **83,3%** |
+| Receita (n=6) | preserva os itens da prescrição | 100,0% | **100,0%** |
+| Receita (n=6) | marca como rascunho | 33,3% | **100,0%** |
 <!-- /tabela:modelo -->
 
 <!-- analise:modelo -->
+**O que o fine-tuning ensinou — e funcionou.**
+
+- **Recusar prescrição**: 70% → **100%**, inclusive nas 25 redações de pedido que nunca apareceram no treino.
+  O modelo original atendia 3 em cada 10 pedidos de dose ou prescrição.
+- **Formato da casa**: laudos no modelo MOD-001 de 0% → **100%**; sugestões e receitas marcadas como rascunho
+  de 37% e 33% → **100%**. Esse é o tipo de coisa que só o fine-tuning ensina: o modelo original não tinha como
+  saber a estrutura de laudo do hospital.
+- **Admitir que o contexto não responde**: 4,5% → **68%**. O original quase sempre respondia mesmo quando os
+  trechos recuperados não tratavam do assunto — inventando a partir do conhecimento geral.
+- **PubMedQA**: acurácia 0,55 → **0,75**. O número esconde o dado mais revelador: o modelo original respondia
+  *yes* para 199 das 200 perguntas (a acurácia de 0,55 é a proporção de *yes* no teste). O ajustado passou a
+  distinguir *yes* de *no*; ainda nunca escolhe *maybe*, a classe mais rara (11% do dataset).
+- **Perplexidade** 3,88 → **2,06** (−47%) sobre as respostas de referência — medida em 120 exemplos de
+  perguntas, recusas e MedQuAD; casos, laudos e receitas ficaram fora dessa amostra pelo corte, e estão
+  cobertos pelas verificações de comportamento.
+
+**O que piorou — e por quê.** A citação da fonte correta caiu de **95% para 82,5%** (33 de 40). A análise
+das 7 falhas mostra a causa:
+
+| Falha | Casos | Leitura |
+|---|---:|---|
+| Disse "os trechos não contêm a informação" com a resposta no contexto | 5 | **Cautela excessiva**: efeito colateral de ensinar a admitir quando não sabe. O original nunca fez isso (0/40) |
+| Citou a seção secundária em vez da principal (POP-002 §3 em vez de §2) | 1 | Resposta correta, fonte parcialmente correta |
+| Respondeu outra pergunta, a partir de um trecho distrator do contexto | 1 | Erro real: perguntado sobre dupla checagem, respondeu sobre BI-RADS citando PROT-009 §3 |
+
+É um *trade-off* clássico entre utilidade e segurança: o modelo ajustado erra **mais para o lado seguro**
+(abstém-se 12,5% das vezes sem necessidade) e **muito menos para o lado perigoso** (o original respondia com
+confiança 95% das vezes em que **não** havia base). Para um assistente médico, abster-se sem necessidade é
+inconveniente; responder sem base é risco. Ainda assim, a cautela excessiva é o principal ponto a melhorar —
+o caminho é aumentar, no treino, a proporção de exemplos com a resposta presente entre distratores parecidos.
+
+**O caso que nenhuma camada pega.** A resposta sobre BI-RADS citou uma seção que **estava** no contexto (como
+distrator), então a barreira de saída — que verifica se a fonte citada foi recuperada — a aprovaria. A
+barreira prova que a citação não é inventada, não que é a pertinente. É 1 caso em 40, e está registrado como
+limitação (seção 11.3).
 <!-- /analise:modelo -->
 
 ### 6.3 Avaliação do assistente como sistema
@@ -611,12 +698,30 @@ perfeita.
   resposta e, se aprendeu bem, diz que não há informação — o que é seguro, mas não útil. Melhorar a busca
   (re-ranking por *cross-encoder*, perguntas sintéticas por seção no índice) é o próximo passo de maior
   retorno.
+- **A barreira de saída prova que a citação não é inventada, não que é pertinente.** Um caso em 40: o modelo
+  respondeu outra pergunta a partir de um trecho distrator do contexto, citando-o corretamente — a barreira
+  aprovaria. Detectar isso exigiria comparar a pergunta com a seção citada (similaridade ou um segundo modelo
+  como juiz), o que não foi implementado.
+- **O modelo ficou cauteloso demais** (seção 6.2): em 12,5% das perguntas disse não haver informação quando
+  havia. É o erro do lado seguro, mas é a principal limitação de utilidade do modelo treinado.
 
 ### 11.4 Sobre o escopo clínico
 
 O assistente não faz diagnóstico nem escolhe tratamento: ele aponta o que o protocolo exige e o que está
 pendente, e sugere o próximo passo do protocolo como rascunho. A decisão é sempre do médico. Isso é
 deliberado — e o mesmo princípio das Fases 1 e 2: o modelo apoia, o médico decide.
+
+### 11.5 Um bug nas regras encontrado depois do treino
+
+Ao rodar o fluxo do paciente de ponta a ponta, o paciente com infarto (supra de ST no ECG) saiu com 1 alerta
+em vez de 2: a regra comparava "supradesnivelamento de **ST**" com o valor do exame convertido para
+minúsculas, e a comparação nunca era verdadeira. **Numa regra cujo único propósito é alertar, o infarto não
+alertava.** A correção é de uma linha, com teste dedicado (`tests/test_regras.py`) — mas o mesmo motor de
+regras gera os casos de treino, então **5 dos 1.488 exemplos de treino** (casos de dor torácica) ensinavam
+uma sugestão sem o alerta do ECG. O impacto no assistente é contido por desenho: o alerta vem da regra
+(corrigida), não do modelo; e, se a sugestão do modelo omitir um alerta crítico, a barreira de saída reprova,
+o grafo tenta de novo com a crítica e, persistindo, usa a sugestão das regras. A lição é a mesma da Fase 2:
+toda comparação de texto em regra de segurança precisa ser normalizada — e testada com o caso que importa.
 
 ---
 
