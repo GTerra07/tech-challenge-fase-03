@@ -103,6 +103,7 @@ def criar_grafo_pergunta(redator: Redator, busca: BuscaProtocolos, auditoria: Au
     @auditado
     def responder(e: EstadoPergunta) -> dict:
         entrada = formato.entrada_pergunta(e["contexto"], e["pergunta"])
+        entrada = formato.com_revisao(entrada, e.get("verificacao", {}).get("problemas", []))
         resposta = redator.redigir(formato.INSTRUCAO_PERGUNTA, entrada, e["execucao"], "pergunta_clinica")
         return {"resposta": resposta, "tentativas": e.get("tentativas", 0) + 1,
                 "trilha": [f"responder: LLM ajustada (tentativa {e.get('tentativas', 0) + 1})"]}

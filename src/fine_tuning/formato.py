@@ -62,3 +62,15 @@ def entrada_caso(dados_paciente: str, achados: str, contexto: str) -> str:
 def prompt(instrucao: str, entrada: str, resposta: str = "") -> str:
     """Prompt completo; com resposta vazia, e o prompt de inferencia."""
     return ALPACA.format(instrucao, entrada, resposta)
+
+
+def com_revisao(entrada: str, problemas: list[str]) -> str:
+    """
+    Nova tentativa com a critica da verificacao automatica (autocorrecao no
+    estilo Reflexion, ChatGPT Aula 4). Sem isso, com temperatura baixa, o modelo
+    devolve a mesma resposta reprovada — medido com o modelo substituto.
+    """
+    if not problemas:
+        return entrada
+    return (f"{entrada}\n\nREVISÃO OBRIGATÓRIA: a resposta anterior foi reprovada pela verificação automática "
+            f"({'; '.join(problemas)}). Responda novamente corrigindo isso.")

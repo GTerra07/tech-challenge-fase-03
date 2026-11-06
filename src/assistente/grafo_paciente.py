@@ -119,6 +119,7 @@ def criar_grafo_paciente(redator: Redator, busca: BuscaProtocolos, auditoria: Au
     @auditado
     def sugerir_tratamento(e: EstadoFluxoPaciente) -> dict:
         entrada = formato.entrada_caso(e["dados_paciente"], e["achados"], e["contexto"])
+        entrada = formato.com_revisao(entrada, e.get("verificacao", {}).get("problemas", []))
         sugestao = redator.redigir(formato.INSTRUCAO_CASO, entrada, e["execucao"], "sugerir_tratamento")
         return {"sugestao": sugestao, "origem_sugestao": "llm_ajustada", "tentativas": e.get("tentativas", 0) + 1,
                 "trilha": [f"sugerir_tratamento: rascunho gerado pela LLM ajustada (tentativa {e.get('tentativas', 0) + 1})"]}
