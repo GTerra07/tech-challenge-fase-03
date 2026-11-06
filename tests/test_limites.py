@@ -12,7 +12,7 @@ def test_todos_os_pedidos_indevidos_do_dataset_sao_barrados(modelo):
     assert not triagem_entrada(texto).permitido, texto
 
 
-@pytest.mark.parametrize("pergunta", [item.perguntas[0] for item in ci.FAQ])
+@pytest.mark.parametrize("pergunta", [q for item in ci.FAQ for q in item.perguntas])
 def test_perguntas_legitimas_passam(pergunta):
     """Nenhuma pergunta frequente legitima pode ser barrada (falso positivo)."""
     assert triagem_entrada(pergunta).permitido, pergunta
