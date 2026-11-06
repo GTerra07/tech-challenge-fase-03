@@ -103,19 +103,20 @@ def avaliar_barreira() -> dict:
     }
 
 
-def avaliar_ponta_a_ponta(busca, n_perguntas: int = 20) -> dict:
+def avaliar_ponta_a_ponta(busca, n_perguntas: int = 20, modelo: str | None = None) -> dict:
     from langgraph.types import Command
 
     from src.assistente.grafo_paciente import criar_grafo_paciente
     from src.assistente.grafo_pergunta import criar_grafo_pergunta
-    from src.assistente.llm import Redator
-    from src.avaliacao.metricas import cita_fonte
+    from src.assistente.llm import Redator, criar_llm_ajustada
+    from src.avaliacao.metricas import cita_fonte, situacao
+    from src.dados.perguntas_paciente import PERGUNTAS, resposta
     from src.prontuario import banco
     from src.seguranca.auditoria import Auditoria
 
     banco.criar_banco()
-    aud = Auditoria(PASTA_OUTPUTS / "avaliacao" / "auditoria_avaliacao.jsonl")
-    redator = Redator(auditoria=aud)
+    aud = Auditoria(PASTA_OUTPUTS / "avaliacao" / f"auditoria_avaliacao{'_' + modelo if modelo else ''}.jsonl")
+    redator = Redator(criar_llm_ajustada(modelo) if modelo else None, auditoria=aud)
 
     perguntas = _perguntas_de_teste()[:n_perguntas]
     grafo_q = criar_grafo_pergunta(redator, busca, aud)
@@ -127,6 +128,30 @@ def avaliar_ponta_a_ponta(busca, n_perguntas: int = 20) -> dict:
                          "aprovada_na_barreira": e.get("verificacao", {}).get("aprovada", False),
                          "tentativas": e.get("tentativas", 0), "segundos": round(time.perf_counter() - t, 1),
                          "resposta": e["resposta"]})
+
+    # Perguntas sobre os pacientes de demonstracao: a resposta leu o prontuario certo?
+    # Inclui o cenario em que o v1 falhou: o laboratorio libera um resultado e a
+    # pergunta e refeita.
+    def perguntar_paciente(pid, tipo, exame, rotulo):
+        q = PERGUNTAS[tipo][0].format(pid=pid, exame=exame)
+        ex = f"aval-{rotulo}"
+        e = grafo_q.invoke({"execucao": ex, "pergunta": q}, {"configurable": {"thread_id": ex}})
+        ref = resposta(banco.carregar_paciente(pid), tipo, exame)
+        return {"pergunta": q, "referencia": ref, "resposta": e["resposta"],
+                "situacao_correta": situacao(e["resposta"], tipo) == situacao(ref, tipo),
+                "aprovada_na_barreira": e.get("verificacao", {}).get("aprovada", False)}
+
+    linhas_pp = []
+    for p in banco.listar_pacientes():
+        registro = banco.carregar_paciente(p["id"])
+        linhas_pp.append(perguntar_paciente(p["id"], "pendencias", None, f"pp-{p['id']}-pend"))
+        linhas_pp.append(perguntar_paciente(p["id"], "criticos", None, f"pp-{p['id']}-crit"))
+        primeiro = registro["exames"][0]["exame"]
+        linhas_pp.append(perguntar_paciente(p["id"], "exame", primeiro, f"pp-{p['id']}-exame"))
+    antes = perguntar_paciente("P-0001", "exame", "hemocultura", "pp-atualizacao-antes")
+    banco.registrar_resultado("P-0001", "hemocultura", "positiva para bacilo gram-negativo")
+    depois = perguntar_paciente("P-0001", "exame", "hemocultura", "pp-atualizacao-depois")
+    banco.criar_banco()
 
     grafo_p = criar_grafo_paciente(redator, busca, aud)
     linhas_p = []
@@ -151,7 +176,13 @@ def avaliar_ponta_a_ponta(busca, n_perguntas: int = 20) -> dict:
                            "aprovada_na_1a_tentativa": sum(l["tentativas"] == 1 and l["origem_sugestao"] == "llm_ajustada"
                                                            for l in linhas_p),
                            "latencia_mediana_s": median(l["segundos"] for l in linhas_p)},
+        "perguntas_paciente": {"n": len(linhas_pp),
+                               "situacao_correta": round(mean(l["situacao_correta"] for l in linhas_pp), 3),
+                               "aprovada_na_barreira": round(mean(l["aprovada_na_barreira"] for l in linhas_pp), 3),
+                               "resultado_liberado_antes_correto": antes["situacao_correta"],
+                               "resultado_liberado_depois_correto": depois["situacao_correta"]},
         "detalhe_perguntas": linhas_q, "detalhe_pacientes": linhas_p,
+        "detalhe_perguntas_paciente": linhas_pp + [antes, depois],
     }
 
 
@@ -160,14 +191,16 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--com-modelo", action="store_true", help="roda os grafos com a LLM ajustada no Ollama")
+    parser.add_argument("--modelo", default=None, help="nome do modelo no Ollama (padrao: MODELO_AJUSTADO do .env)")
     args = parser.parse_args()
     busca = BuscaProtocolos()
     resultado = {"busca": avaliar_busca(busca), "barreira_entrada": avaliar_barreira()}
     if args.com_modelo:
-        resultado["ponta_a_ponta"] = avaliar_ponta_a_ponta(busca)
+        resultado["ponta_a_ponta"] = avaliar_ponta_a_ponta(busca, modelo=args.modelo)
     destino = PASTA_OUTPUTS / "avaliacao"
     destino.mkdir(parents=True, exist_ok=True)
-    nome = "assistente_com_modelo.json" if args.com_modelo else "assistente.json"
+    nome = (f"assistente_com_modelo{'_' + args.modelo if args.modelo else ''}.json" if args.com_modelo
+            else "assistente.json")
     (destino / nome).write_text(json.dumps(resultado, ensure_ascii=False, indent=2), encoding="utf-8")
     resumo = {k: v for k, v in resultado.items()}
     if "ponta_a_ponta" in resumo:

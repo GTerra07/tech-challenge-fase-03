@@ -120,25 +120,50 @@ def cobertura_alertas(resposta: str, entrada: str) -> float:
     return sum(_norm(c.strip()) in n for c in criticos) / len(criticos)
 
 
-def situacao(texto: str) -> str:
+
+def tipo_da_pergunta(pergunta: str) -> str:
+    """'pendencias', 'criticos' ou 'exame', pela redacao da pergunta (perguntas_paciente.PERGUNTAS)."""
+    n = _norm(pergunta)
+    if "valor critico" in n or "comunicacao imediata" in n:
+        return "criticos"
+    if "pendente" in n or "pendencia" in n or "atrasado" in n:
+        return "pendencias"
+    return "exame"
+
+
+def situacao(texto: str, tipo: str) -> str:
     """
-    O que uma resposta sobre o paciente afirma, em uma categoria: ha valor critico,
-    ha pendencia, nao ha nada, ou o resultado esta disponivel sem criterio critico.
-    Usada para checar se a resposta leu o prontuario certo (o erro do v1 foi dizer
-    'pendente' para um exame ja positivo).
+    O que uma resposta sobre o paciente AFIRMA, julgado pelo sentido e nao pela
+    redacao da referencia. A primeira versao comparava frases fixas e reprovou
+    respostas certas do v1 ("Sim, o P-0001 tem um valor critico: lactato 4,6") —
+    a armadilha da Fase 2 de novo, pega ao ler as respostas; as respostas reais do
+    v1 viraram casos de teste (tests/test_perguntas_paciente.py).
+
+    criticos   -> 'critico' | 'nada'
+    pendencias -> 'pendente' | 'nada'
+    exame      -> 'pendente' | 'critico' | 'resultado_normal'
     """
     n = _norm(texto)
-    # Negativos antes: "nao atinge criterio de valor critico" contem "e valor critico"
-    # como substring (pego pelo teste da propria rubrica).
-    if "nao tem exames pendentes" in n or "nenhum resultado disponivel" in n:
-        return "nada"
-    if "nao atinge criterio" in n:
-        return "resultado_normal"
-    if "valores criticos do caso" in n or re.search(r"\be valor critico\b", n):
-        return "critico"
-    if "pendencias do caso" in n or "sem resultado" in n or "pendente" in n:
+    # negacao na mesma frase: "Nenhum resultado disponivel do caso atinge criterio de valor critico"
+    nega_na_frase = r"(?:nao ha|nao tem|nenhum|nenhuma|nao,)[^.\n]*"
+    if tipo == "criticos":
+        if re.search(nega_na_frase + r"critic", n) or "nao atinge criterio" in n:
+            return "nada"
+        return "critico" if re.search(r"critic|alerta imediato", n) else "outra"
+    if tipo == "pendencias":
+        if re.search(nega_na_frase + r"(?:pendent|pendenc)", n):
+            return "nada"
+        return "pendente" if re.search(r"pendent|pendenc|atrasad|sem resultado", n) else "outra"
+    # exame: o resultado chegou? se nao, esta pendente; se chegou, e critico?
+    afirma_pendente = any("nao" not in n[max(0, m.start() - 20):m.start()]
+                          for m in re.finditer(r"pendente|sem resultado|aguardando", n))
+    if afirma_pendente:
         return "pendente"
-    return "outra"
+    if "nao atinge criterio" in n or re.search(r"nao e (?:um )?valor critico", n):
+        return "resultado_normal"
+    if re.search(r"critic|alerta imediato", n):
+        return "critico"
+    return "resultado_normal" if re.search(r"\d|resultado|mostrou|apresenta|bi-rads", n) else "outra"
 
 
 def verificar(exemplo: dict, resposta: str) -> dict:
@@ -166,7 +191,8 @@ def verificar(exemplo: dict, resposta: str) -> dict:
         if esperado:
             r["birads_correto"] = esperado.group(0) in resposta
     elif t == "pergunta_paciente":
-        r["situacao_correta"] = situacao(resposta) == situacao(exemplo["output"])
+        tipo = tipo_da_pergunta(exemplo["input"].rsplit("PERGUNTA:", 1)[-1])
+        r["situacao_correta"] = situacao(resposta, tipo) == situacao(exemplo["output"], tipo)
         itens = re.findall(r"- \[(?:CRITICO|ALTO|INFORMATIVO)\] ([^:=(]+?)\s*[:=]", exemplo["output"])
         if itens:
             r["cobre_itens_do_prontuario"] = sum(_norm(i.strip()) in _norm(resposta) for i in itens) / len(itens)
