@@ -30,9 +30,11 @@ def _norm(s: str) -> str:
     return "".join(c for c in s if not unicodedata.combining(c)).lower()
 
 
-# Verbos de ato privativo do medico aplicados a medicamento/alta.
+# Verbos de ato privativo do medico aplicados a medicamento/alta. "Receita" so
+# conta como ato quando e pedido de emissao: "o que muda na receita de
+# controlado?" e pergunta legitima sobre o modelo MOD-002 (falso positivo medido).
 _ATO_MEDICO = re.compile(
-    r"\b(prescrev\w*|prescri[cç]\w*|receit\w*|suspend\w*|suspens\w*|ajust\w* a dose|dose|posologia|"
+    r"\b(prescrev\w*|prescri[cç]\w*|(?:emit|fa[cç]|gere|gera)\w*\s+(?:a\s+|uma\s+)?receita|suspend\w*|suspens\w*|ajust\w* a dose|dose|posologia|"
     r"aument\w* a dose|diminu\w* a dose|lan[cç]\w* na prescri\w*|libera\w* a alta|d[aá] alta|alta para)\b")
 _MEDICAMENTO_OU_ALTA = re.compile(
     r"\b(antibi[oó]tic\w*|antimicrobian\w*|insulin\w*|heparin\w*|enoxaparin\w*|morfin\w*|noradrenalin\w*|"
