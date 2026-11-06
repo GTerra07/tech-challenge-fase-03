@@ -1,0 +1,88 @@
+#!/bin/sh
+# ==========================================================================
+# Hook de pre-commit — barreira final contra vazamento de segredo.
+#
+# Instalado com:  git config core.hooksPath .githooks
+#
+# O .gitignore ja protege o .env, mas ele falha em dois casos reais:
+#   1. alguem usa "git add -f .env";
+#   2. a chave e colada direto num notebook, script ou README.
+# Este hook cobre os dois: inspeciona o conteudo que esta sendo commitado,
+# nao apenas o nome dos arquivos.
+# ==========================================================================
+
+VERMELHO='\033[0;31m'
+AMARELO='\033[0;33m'
+VERDE='\033[0;32m'
+SEM_COR='\033[0m'
+
+erros=0
+
+# --------------------------------------------------------------------------
+# 1) O proprio arquivo .env foi adicionado?
+# --------------------------------------------------------------------------
+if git diff --cached --name-only | grep -qE '(^|/)\.env$|(^|/)\.env\.[^/]*$' ; then
+    if ! git diff --cached --name-only | grep -qE '(^|/)\.env\.example$'; then
+        printf "${VERMELHO}[BLOQUEADO] O arquivo .env esta no commit.${SEM_COR}\n"
+        printf "  Ele guarda a chave da API e nunca deve ir para o repositorio.\n"
+        printf "  Para remover do stage:  git reset HEAD .env\n\n"
+        erros=1
+    fi
+fi
+
+# --------------------------------------------------------------------------
+# 2) Ha algo com cara de chave de API no conteudo?
+#    Procuramos nas LINHAS ADICIONADAS do diff staged.
+# --------------------------------------------------------------------------
+adicionadas=$(git diff --cached --diff-filter=ACM -U0 | grep '^+' | grep -v '^+++')
+
+# Padroes de credencial de provedores comuns.
+#   AQ.<...>  -> formato novo de chave do Google AI Studio
+#   AIza<...> -> formato classico de chave do Google
+#   sk-<...>  -> OpenAI
+#   gsk_<...> -> Groq
+#   hf_<...>  -> Hugging Face (usado no Colab para baixar modelo e dataset)
+padroes='AQ\.[A-Za-z0-9_-]{30,}|AIza[0-9A-Za-z_-]{30,}|sk-[A-Za-z0-9]{20,}|gsk_[A-Za-z0-9]{20,}|hf_[A-Za-z0-9]{30,}'
+
+achados=$(printf '%s' "$adicionadas" | grep -nE "$padroes")
+
+if [ -n "$achados" ]; then
+    printf "${VERMELHO}[BLOQUEADO] Encontrei algo que parece uma chave de API no commit.${SEM_COR}\n\n"
+    # Mostra so um trecho mascarado, para nao reimprimir o segredo inteiro.
+    printf '%s' "$achados" | sed -E "s/(AQ\.|AIza|sk-|gsk_|hf_)[A-Za-z0-9_-]{6}[A-Za-z0-9_-]*/\1XXXXXX...[OCULTADO]/g" | head -5
+    printf "\n  Tire a chave do codigo e leia de variavel de ambiente:\n"
+    printf "      import os\n"
+    printf "      chave = os.environ['NOME_DA_VARIAVEL']\n\n"
+    erros=1
+fi
+
+# --------------------------------------------------------------------------
+# 3) Notebook com saida de celula preservada.
+#    Saidas costumam carregar dados, caminhos locais e, ocasionalmente,
+#    a propria chave impressa por engano.
+# --------------------------------------------------------------------------
+notebooks=$(git diff --cached --name-only --diff-filter=ACM | grep '\.ipynb$')
+for nb in $notebooks; do
+    # A presenca de "output_type" ja denuncia saida salva; "execution_count"
+    # so conta quando vem com numero (celula limpa grava null).
+    #
+    # A versao anterior usava ': *[^n]', que dava falso positivo em TODA
+    # celula limpa: o ' *' casa zero espacos e o '[^n]' casa o proprio espaco
+    # antes de 'null'. Um aviso que dispara sempre e um aviso que ninguem le.
+    if [ -f "$nb" ] && grep -qE '"output_type"|"execution_count": *[0-9]' "$nb" 2>/dev/null; then
+        printf "${AMARELO}[AVISO] O notebook %s tem saidas de celula salvas.${SEM_COR}\n" "$nb"
+        printf "  Saida de celula carrega caminho local, dado e - por acidente - a propria\n"
+        printf "  chave impressa na tela. Regere o notebook limpo antes de versionar:\n"
+        printf "    jupyter nbconvert --clear-output --inplace <notebook>\n\n"
+    fi
+done
+
+# --------------------------------------------------------------------------
+if [ "$erros" -ne 0 ]; then
+    printf "${VERMELHO}Commit abortado pelo hook de seguranca.${SEM_COR}\n"
+    printf "Se for um falso positivo, use: git commit --no-verify\n"
+    exit 1
+fi
+
+printf "${VERDE}[OK] Nenhum segredo detectado no commit.${SEM_COR}\n"
+exit 0

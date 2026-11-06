@@ -1,0 +1,37 @@
+{
+  "entrada": {
+    "interno": 871,
+    "pubmedqa": 1000,
+    "medquad": 632
+  },
+  "removidos": {
+    "duplicata": {
+      "interno": 44
+    },
+    "marcação residual": {
+      "pubmedqa": 3
+    }
+  },
+  "saida": {
+    "interno": 827,
+    "pubmedqa": 997,
+    "medquad": 632
+  },
+  "divisao": {
+    "treino": {
+      "medquad": 400,
+      "pubmedqa": 501,
+      "interno": 591
+    },
+    "validacao": {
+      "pubmedqa": 50,
+      "interno": 26,
+      "medquad": 50
+    },
+    "teste": {
+      "interno": 210,
+      "medquad": 100,
+      "pubmedqa": 200
+    }
+  }
+}

@@ -1,0 +1,77 @@
+# ==========================================================
+# SEGREDOS — nunca versionar
+# ==========================================================
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+credentials.json
+secrets.json
+segredos/
+
+# ==========================================================
+# Python
+# ==========================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+ENV/
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ==========================================================
+# Jupyter
+# ==========================================================
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+profile_default/
+ipython_config.py
+
+# ==========================================================
+# Testes e ferramentas
+# ==========================================================
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# ==========================================================
+# Artefatos pesados ou sensíveis
+# ==========================================================
+# Downloads dos datasets públicos (regerados por src/dados/ingestao.py)
+data/externo/
+# Exportações brutas sintéticas COM dado pessoal falso: só a versão
+# anonimizada é versionada, para o repositório nunca carregar PII,
+# nem falsa (regerada por src/dados/gerador_interno.py).
+data/bruto/
+# Modelo ajustado: o adaptador LoRA e o GGUF têm GBs; vão no Drive
+modelo/
+*.gguf
+*.safetensors
+# Índice vetorial e banco são regerados a partir dos arquivos versionados
+data/indice/
+data/prontuarios.db
+# Log de auditoria gerado em execução (amostra da demo vai em outputs/)
+logs/
+*.npy
+*.pkl
+*.joblib
+
+# ==========================================================
+# Sistema operacional / IDE
+# ==========================================================
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
