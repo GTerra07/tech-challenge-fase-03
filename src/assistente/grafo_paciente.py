@@ -85,7 +85,7 @@ def criar_grafo_paciente(redator: Redator, busca: BuscaProtocolos, auditoria: Au
         emitidos = []
         agora = datetime.now(timezone.utc).isoformat(timespec="seconds")
         for a in e["alertas"]:
-            alerta = {"alerta_id": uuid.uuid4().hex[:10], "emitido_em": agora, "execucao": e["execucao"],
+            alerta = {"alerta_id": "ALR-" + uuid.uuid4().hex[:10], "emitido_em": agora, "execucao": e["execucao"],
                       "paciente_id": e["paciente_id"], "nivel": a["nivel"], "exame": a["exame"], "descricao": anonimizar(a["descricao"]),
                       "fonte": a["fonte"], "destinatario": "médico responsável e enfermagem do leito",
                       "prazo_comunicacao_min": PRAZO_MIN[a["nivel"]],
