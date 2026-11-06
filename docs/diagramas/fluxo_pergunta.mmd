@@ -1,0 +1,30 @@
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	triagem_entrada(triagem_entrada)
+	recusar(recusar)
+	identificar_paciente(identificar_paciente)
+	consultar_paciente(consultar_paciente)
+	buscar_protocolos(buscar_protocolos)
+	sem_base(sem_base)
+	responder(responder)
+	verificar_resposta(verificar_resposta)
+	anotar_ressalva(anotar_ressalva)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> triagem_entrada;
+	buscar_protocolos -.-> responder;
+	buscar_protocolos -.-> sem_base;
+	consultar_paciente --> buscar_protocolos;
+	identificar_paciente -. &nbsp;sem_paciente&nbsp; .-> buscar_protocolos;
+	identificar_paciente -. &nbsp;com_paciente&nbsp; .-> consultar_paciente;
+	responder --> verificar_resposta;
+	triagem_entrada -. &nbsp;permitida&nbsp; .-> identificar_paciente;
+	triagem_entrada -. &nbsp;bloqueada&nbsp; .-> recusar;
+	verificar_resposta -. &nbsp;ok&nbsp; .-> __end__;
+	verificar_resposta -. &nbsp;ressalva&nbsp; .-> anotar_ressalva;
+	verificar_resposta -. &nbsp;tentar_de_novo&nbsp; .-> responder;
+	anotar_ressalva --> __end__;
+	recusar --> __end__;
+	sem_base --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc
