@@ -146,7 +146,7 @@ def valores_criticos(paciente: dict) -> list[Achado]:
                         "PROT-007 §2"))
         elif nome in RESULTADOS_CRITICOS:
             alvo, fonte = RESULTADOS_CRITICOS[nome]
-            if alvo in str(valor).lower():
+            if alvo.lower() in str(valor).lower():
                 achados.append(Achado("valor_critico", CRITICO, nome, f"{nome}: {valor}", fonte))
     return _ordenar(achados)
 
