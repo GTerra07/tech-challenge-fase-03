@@ -178,7 +178,7 @@ ACOES: dict[tuple[str, str], str] = {
     ("valor_critico", "lactato"): "Lactato ≥ 4 mmol/L: o protocolo prevê reposição volêmica com cristaloide conforme prescrição médica (PROT-001 §3) e reavaliação em até 6 horas (PROT-001 §5).",
     ("valor_critico", "potássio"): "Potássio em faixa crítica: realizar ECG imediatamente e repetir a dosagem para afastar hemólise; medidas terapêuticas conforme prescrição médica (PROT-005 §4).",
     ("valor_critico", "potássio de controle"): "Potássio de controle em faixa crítica: reavaliação médica imediata (PROT-005 §4).",
-    ("valor_critico", "glicemia"): "Glicemia em faixa crítica: seguir o POP-004 na hipoglicemia e reavaliar o controle glicêmico (PROT-004 §5 e §6).",
+    ("valor_critico", "glicemia"): "Glicemia em faixa crítica (< 54 ou > 400 mg/dL): reavaliação médica imediata; na hiperglicemia, investigar cetoacidose (PROT-004 §3); na hipoglicemia, seguir o POP-004 (PROT-004 §5).",
     ("valor_critico", "sódio"): "Sódio em faixa crítica: avaliação médica imediata (PROT-007 §2).",
     ("valor_critico", "hemoglobina"): "Hemoglobina < 7 g/dL: avaliação médica imediata (PROT-007 §2).",
     ("valor_critico", "plaquetas"): "Plaquetas < 20.000/mm³: avaliação médica imediata; reavaliar anticoagulantes em uso (PROT-006 §6).",
@@ -213,11 +213,23 @@ def fontes_para_contexto(paciente: dict) -> list[str]:
 
     alertas_ = alertas(paciente)
     fontes = {a.fonte for a in alertas_} | set(FONTES_FIXAS)
+    # O objetivo (§1) de cada protocolo ativo situa o caso
+    fontes |= {f"{prot} §1" for prot in paciente.get("protocolos_ativos", [])}
     for a in alertas_:
         fontes |= fontes_citadas(acao_sugerida(a))
     if any(a.nivel == CRITICO for a in alertas_):
         fontes |= set(FONTES_SE_CRITICO)
     return sorted(fontes)
+
+
+def fontes_da_pergunta_paciente(paciente: dict) -> list[str]:
+    """
+    Secoes que entram no contexto de uma pergunta sobre um paciente: as que os
+    achados dele citam, mais a lista e o prazo de valores criticos (PROT-007 §2
+    e §3). Usada pelo grafo de perguntas e pelo dataset (v2).
+    """
+    achados = valores_criticos(paciente) + exames_pendentes(paciente)
+    return sorted({a.fonte for a in achados} | {"PROT-007 §2", "PROT-007 §3"})
 
 
 def _ordenar(achados: list[Achado]) -> list[Achado]:

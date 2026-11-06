@@ -15,7 +15,7 @@ import pytest
 from src.avaliacao.metricas import fontes_citadas
 from src.config import PASTA_PROCESSADO
 
-TAREFAS_COM_CONTEXTO = {"pergunta", "caso", "recusa", "sem_contexto"}
+TAREFAS_COM_CONTEXTO = {"pergunta", "caso", "recusa", "sem_contexto", "pergunta_paciente"}
 
 
 def _todos():
@@ -54,4 +54,5 @@ def test_todas_as_tarefas_do_enunciado_estao_no_treino():
     """Protocolos (pergunta/caso), FAQ de medicos, laudos, receitas e limites (recusa)."""
     with open(PASTA_PROCESSADO / "treino.jsonl", encoding="utf-8") as f:
         tarefas = {json.loads(l)["tarefa"] for l in f}
-    assert {"pergunta", "caso", "laudo", "receita", "recusa", "sem_contexto", "pubmedqa", "medquad"} <= tarefas
+    assert {"pergunta", "pergunta_paciente", "caso", "laudo", "receita", "recusa", "sem_contexto", "pubmedqa",
+            "medquad"} <= tarefas
