@@ -63,10 +63,11 @@ ROTULOS = {
     "cobertura_alertas_criticos": "cobre os alertas críticos", "marca_rascunho": "marca como rascunho",
     "estrutura_mod001": "segue a estrutura MOD-001", "birads_correto": "BI-RADS correto",
     "preserva_itens": "preserva os itens da prescrição",
+    "situacao_correta": "lê o prontuário certo", "cobre_itens_do_prontuario": "cita os itens do prontuário",
 }
 TAREFAS = {"medquad": "MedQuAD", "pergunta": "Pergunta sobre protocolo", "sem_contexto": "Pergunta sem resposta no contexto",
            "recusa": "Pedido de prescrição (25 de 40 com redação inédita)", "caso": "Caso de paciente",
-           "laudo": "Laudo", "receita": "Receita"}
+           "pergunta_paciente": "Pergunta sobre paciente", "laudo": "Laudo", "receita": "Receita"}
 
 
 def tabela_modelo():
@@ -126,15 +127,25 @@ def tabela_sistema():
 
 
 def tabela_ponta_a_ponta():
-    s = _ler("avaliacao/assistente_com_modelo.json")
+    s = _ler("avaliacao/assistente_com_modelo_assistente-medico-v2.json")
     if not s:
         return "_(rodar python -m src.avaliacao.avaliar_assistente --com-modelo)_"
     p, f = s["ponta_a_ponta"]["perguntas"], s["ponta_a_ponta"]["fluxo_paciente"]
+    pp = s["ponta_a_ponta"]["perguntas_paciente"]
+    sim = lambda b: "sim" if b else "não"  # noqa: E731
     return "\n".join([
+        "Modelo v2 (final), servido pelo Ollama:", "",
         "| Fluxo | Métrica | Resultado |", "|---|---|---:|",
-        f"| Perguntas clínicas (n={p['n']}) | cita a fonte correta | {_pct(p['cita_fonte_correta'])} |",
+        f"| Perguntas sobre protocolo (n={p['n']}) | cita a fonte correta | {_pct(p['cita_fonte_correta'])} |",
         f"| | aprovada na barreira de saída | {_pct(p['aprovada_na_barreira'])} |",
         f"| | latência mediana | {_n(p['latencia_mediana_s'], 1)} s |",
+        f"| Perguntas sobre paciente (n={pp['n']}) | modelo lê o prontuário certo na 1ª tentativa | "
+        f"{_pct(pp['certa_na_1a_tentativa'])} |",
+        f"| | resposta final correta (com a verificação factual) | {_pct(pp['situacao_correta'])} |",
+        f"| | respostas montadas direto do prontuário | {pp['montadas_do_prontuario']}/{pp['n']} |",
+        f"| | resultado liberado entre duas perguntas: modelo acerta de primeira | "
+        f"{sim(pp['resultado_liberado_depois_na_1a_tentativa'])} |",
+        f"| | … resposta final correta | {sim(pp['resultado_liberado_depois_correto'])} |",
         f"| Fluxo do paciente (n={f['n']}) | sugestão da LLM aprovada | {f['sugestao_da_llm_aprovada']}/{f['n']} |",
         f"| | aprovada já na 1ª tentativa | {f['aprovada_na_1a_tentativa']}/{f['n']} |",
         f"| | fallback para as regras | {f['fallback_regras']}/{f['n']} |",
@@ -201,11 +212,12 @@ def tabela_resumo():
         return "_(aguardando a avaliação no Colab)_"
     b, a = m["base"]["comportamento"], m["ajustado"]["comportamento"]
     linhas = ["## O resultado em uma tabela", "",
-              "LLaMA 3.1 8B original × ajustado, no mesmo conjunto de teste separado antes do treino:", "",
+              "LLaMA 3.1 8B original × **modelo final (v2)**, no mesmo conjunto de teste separado antes do treino:", "",
               "| Comportamento | Original | Ajustado |", "|---|---:|---:|"]
     itens = [("Recusa pedido de prescrição", "recusa", "recusou"),
              ("Laudo no modelo interno (MOD-001)", "laudo", "estrutura_mod001"),
              ("Sugestão de conduta marcada como rascunho", "caso", "marca_rascunho"),
+             ("Lê o prontuário numa pergunta sobre o paciente", "pergunta_paciente", "situacao_correta"),
              ("Admite quando o contexto não responde", "sem_contexto", "admite_sem_contexto"),
              ("Cita a fonte correta", "pergunta", "cita_fonte_correta")]
     for nome, t, c in itens:
@@ -213,11 +225,13 @@ def tabela_resumo():
         valor = f"**{_pct(a[t][c])}**" if a[t][c] > b[t][c] else _pct(a[t][c])
         linhas.append(f"| {nome} | {_pct(b[t][c])} | {valor} |")
     p = m["perplexidade"]
-    linhas += [f"| PubMedQA — acurácia | {_n(m['base']['pubmedqa']['acuracia'], 2)} | "
-               f"**{_n(m['ajustado']['pubmedqa']['acuracia'], 2)}** |",
+    linhas += [f"| PubMedQA — acurácia | {_n(m['base']['pubmedqa']['acuracia'], 3)} | "
+               f"**{_n(m['ajustado']['pubmedqa']['acuracia'], 3)}** |",
                f"| Perplexidade (↓) | {_n(p['base'], 2)} | **{_n(p['ajustado'], 2)}** |", "",
-               "A queda em \"cita a fonte correta\" é analisada no relatório (seção 6.2): o modelo ajustado ficou "
-               "mais cauteloso e às vezes diz não haver informação quando havia — o erro do lado seguro."]
+               "No assistente completo, as respostas sobre o paciente passam ainda pela verificação factual contra "
+               "o prontuário (100% de respostas finais corretas em 21 perguntas). Os pontos fracos — admitir pouco "
+               "quando o contexto não responde e só 55% de citação correta nas perguntas de protocolo no sistema "
+               "completo — e a evolução do v1 para o v2 estão no relatório (seções 6.2 a 6.5 e 11.3)."]
     return "\n".join(linhas)
 
 
