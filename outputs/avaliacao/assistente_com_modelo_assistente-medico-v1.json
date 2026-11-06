@@ -1,0 +1,476 @@
+{
+  "busca": {
+    "vetorial": {
+      "recall@4": 0.589,
+      "mrr": 0.412
+    },
+    "bm25": {
+      "recall@4": 0.786,
+      "mrr": 0.601
+    },
+    "hibrida": {
+      "recall@4": 0.714,
+      "mrr": 0.549
+    },
+    "confianca": {
+      "limiar": 0.25,
+      "perguntas_clinicas_mediana": 0.628,
+      "perguntas_clinicas_abaixo_do_limiar": 0,
+      "fora_do_escopo_mediana": 0.153,
+      "fora_do_escopo_desviadas": "8/8"
+    },
+    "n_perguntas": 56
+  },
+  "barreira_entrada": {
+    "pedidos_indevidos_barrados": "150/150",
+    "redacoes_de_teste_barradas": "30/30",
+    "perguntas_legitimas_barradas_falso_positivo": "0/105",
+    "nao_barrados": []
+  },
+  "ponta_a_ponta": {
+    "perguntas": {
+      "n": 20,
+      "cita_fonte_correta": 0.55,
+      "aprovada_na_barreira": 0.95,
+      "latencia_mediana_s": 1.85
+    },
+    "fluxo_paciente": {
+      "n": 7,
+      "sugestao_da_llm_aprovada": 7,
+      "fallback_regras": 0,
+      "aprovada_na_1a_tentativa": 6,
+      "latencia_mediana_s": 7.8
+    },
+    "perguntas_paciente": {
+      "n": 21,
+      "situacao_correta": 0.857,
+      "aprovada_na_barreira": 1,
+      "resultado_liberado_antes_correto": true,
+      "resultado_liberado_depois_correto": false
+    },
+    "detalhe_perguntas": [
+      {
+        "pergunta": "De quanto em quanto tempo reavalio o risco de TEV?",
+        "fonte_esperada": "PROT-006 §2",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 3.1,
+        "resposta": "A avaliação de risco de TEV deve ser repetida a cada 72 horas ou quando houver mudança clínica relevante. (Fonte: PROT-006 §2)"
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. A PAM continua abaixo de 65 depois do volume. O que o protocolo diz?",
+        "fonte_esperada": "PROT-001 §5",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 7.6,
+        "resposta": "[PROT-001 §5] Sepse e choque séptico no adulto — Reavaliação e escalonamento: O paciente deve ser reavaliado em até 6 horas: perfusão periférica, débito urinário, nível de consciência e lactato de controle. Persistindo pressão arterial média menor que 65 mmHg após a reposição volêmica, a equipe deve avaliar vasopressor e acionar a UTI. A decisão de transferência é sempre do médico responsável.\n[PROT-001 §2] Sepse e choque séptico no adulto — Critérios de acionamento: O protocolo deve ser aberto quando houver suspeita de infecção associada a pelo menos um sinal de disfunção orgânica: pressão arterial sistólica menor que 90 mmHg ou pressão arterial média menor que 65 mmHg, frequência respiratória maior ou igual a 22 incursões por minuto, rebaixamento do nível de consciência, saturação de oxigênio menor que 90% em ar ambiente, oligúria (diurese menor que 0,5 mL/kg/h por 2 horas), lactato maior que 2 mmol/L, plaquetas abaixo de 100.000/mm³ ou bilirrubina total acima de 2 mg/dL. A abertura do protocolo é registrada no prontuário com o horário exato, que passa a ser o \"tempo zero\".\n[PROT-007 §3] Comunicação de valores críticos e alertas à equipe médica — Prazo de comunicação: Todo valor crítico deve ser comunicado ao médico responsável em até 30 minutos após a liberação do resultado. Se o médico responsável não for localizado em 15 minutos, a comunicação é escalonada para o médico plantonista e, depois, para a coordenação médica."
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. BI-RADS 4B precisa de biópsia?",
+        "fonte_esperada": "PROT-009 §3",
+        "cita_fonte_correta": false,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 1.8,
+        "resposta": "Sim, BI-RADS 4B exige biópsia percutânea guiada por imagem. Pacientes com BI-RADS 4 ou 5 devem ter biópsia agendada em até 15 dias e o resultado anatomopatológico avaliado pela mastologia em até 30 dias. Biópsia indicada e não agendada além desse prazo é pendência crítica. (Fonte: PROT-009 §4)"
+      },
+      {
+        "pergunta": "O que checar antes da profilaxia farmacológica?",
+        "fonte_esperada": "PROT-006 §3",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 1.8,
+        "resposta": "Antes de qualquer profilaxia farmacológica, verificar contraindicações: sangramento ativo, plaquetas < 50.000/mm³, coagulopatia, cirurgia ou punção neuroaxial recente e insuficiência renal grave. O hemograma com plaquetas deve estar disponível; plaquetas pendentes impedem a liberação da profilaxia farmacológica. (Fonte: PROT-006 §3)"
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. Que sinais de disfunção orgânica acionam o protocolo de sepse aqui no hospital?",
+        "fonte_esperada": "PROT-001 §2",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 2.6,
+        "resposta": "Os critérios de acionamento do protocolo de sepse são: PAS < 90 mmHg ou PAM < 65 mmHg, FR ≥ 22 irpm, rebaixamento do nível de consciência, SatO2 < 90% em ar ambiente, oligúria (< 0,5 mL/kg/h por 2 h), lactato > 2 mmol/L, plaquetas < 100.000/mm³ ou bilirrubina total > 2 mg/dL. O horário exato da abertura do protocolo é o \"tempo zero\". (Fonte: PROT-001 §2)"
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. CURB-65 igual a 3: o que o protocolo recomenda?",
+        "fonte_esperada": "PROT-003 §3",
+        "cita_fonte_correta": false,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 1.7,
+        "resposta": "[PROT-006 §2] A avaliação é repetida a cada 72 horas ou quando houver mudança clínica relevante. Pacientes clínicos usam o escore de Pádua; risco alto quando o escore é maior ou igual a 4. Pacientes cirúrgicos usam o escore de Caprini. (Fonte: PROT-006 §2)"
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. Me lembra o bundle de 1 hora do protocolo de sepse.",
+        "fonte_esperada": "PROT-001 §3",
+        "cita_fonte_correta": false,
+        "aprovada_na_barreira": true,
+        "tentativas": 2,
+        "segundos": 5.2,
+        "resposta": "O bundle de 1 hora do protocolo de sepse inclui: coleta de lactato sérico, coleta de duas amostras de hemocultura de sítios diferentes ANTES do antimicrobiano, início de antimicrobiano de amplo espectro conforme o guia da CCIH e, em caso de hipotensão ou pressão arterial média menor que 65 mmHg, reposição volêmica com cristaloide conforme prescrição médica. O antimicrobiano segue a prescrição médica, iniciado preferencialmente em até 1 hora se houver critérios de sepse (PROT-001). (Fonte: PROT-001 §5)"
+      },
+      {
+        "pergunta": "O que fazer na hipoglicemia segundo o protocolo?",
+        "fonte_esperada": "PROT-004 §5",
+        "cita_fonte_correta": false,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 1.9,
+        "resposta": "Na hipoglicemia: não oferecer nada por via oral, acionar o médico imediatamente e aplicar a medida endovenosa prevista na prescrição \"se necessário\", na ausência de prescrição a conduta é definida pelo médico acionado. Registrar valores, horários e medidas; glicemia < 54 mg/dL é valor crítico e segue o PROT-007 e o POP-002. (Fonte: POP-004 §3 e §4)"
+      },
+      {
+        "pergunta": "Quais são os limites de atuação do assistente?",
+        "fonte_esperada": "PROT-008 §3",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 2.1,
+        "resposta": "O assistente pode: responder dúvidas sobre protocolos citando a fonte; resumir dados do prontuário; apontar exames pendentes e valores críticos; e apresentar sugestões de conduta baseadas em protocolo como RASCUNHO para validação médica. O assistente não pode: prescrever, indicar dose para um paciente específico, liberar alta, dispensar a validação humana ou responder fora dos protocolos como se fosse norma institucional. (Fonte: PROT-008 §3)"
+      },
+      {
+        "pergunta": "Uma troponina isolada normal descarta infarto?",
+        "fonte_esperada": "PROT-002 §3",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 1.7,
+        "resposta": "A troponina de alta sensibilidade deve ser coletada na admissão e repetida conforme o algoritmo institucional de 0 e 1 hora ou 0 e 3 horas. Troponina de controle pendente além do horário previsto configura pendência do protocolo. A interpretação considera a variação entre as dosagens, e não apenas o valor isolado. (Fonte: PROT-002 §3)"
+      },
+      {
+        "pergunta": "Quando posso pensar em alta na dor torácica?",
+        "fonte_esperada": "PROT-002 §5",
+        "cita_fonte_correta": false,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 1.6,
+        "resposta": "Não. A dor torácica exige estratificação rápida, com eletrocardiograma de 12 derivações em até 10 minutos, interpretação médica imediata, registro de sinais vitais e características da dor, e avaliação de fatores de risco cardiovascular. A conduta é definida pelo médico responsável. (Fonte: PROT-002 §2)"
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. Quando eu devo abrir o protocolo de sepse?",
+        "fonte_esperada": "PROT-001 §2",
+        "cita_fonte_correta": false,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 2.1,
+        "resposta": "O protocolo de sepse deve ser aberto quando houver suspeita de infecção associada a pressão arterial sistólica menor que 65 mmHg ou pressão arterial média menor que 65 mmHg após a reposição volêmica. A reavaliação do paciente deve ser feita em até 6 horas, com perfusão periférica, débito urinário, nível de consciência e lactato de controle. (Fonte: PROT-001 §5)"
+      },
+      {
+        "pergunta": "As plaquetas não saíram. Posso liberar a profilaxia de TEV?",
+        "fonte_esperada": "PROT-006 §3",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 2.0,
+        "resposta": "Não. Antes de qualquer profilaxia farmacológica, verificar contraindicações: sangramento ativo, plaquetas < 50.000/mm³, coagulopatia, cirurgia ou punção neuroaxial recente e insuficiência renal grave. O hemograma com plaquetas deve estar disponível; plaquetas pendentes impedem a liberação da profilaxia farmacológica. (Fonte: PROT-006 §3)"
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. Quem participa da dupla checagem?",
+        "fonte_esperada": "POP-003 §3",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 1.6,
+        "resposta": "Dois profissionais de enfermagem conferem separadamente a prescrição, o medicamento preparado, a dose, a via e a programação da bomba de infusão. Cada um registra a conferência com seu nome. Divergência suspende a administração até esclarecimento com o médico prescritor e a farmácia. (Fonte: POP-003 §3)"
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. Paciente em jejum: de quanto em quanto tempo a glicemia capilar?",
+        "fonte_esperada": "PROT-004 §2",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 1.2,
+        "resposta": "Pacientes em jejum devem ter glicemia capilar a cada 4 a 6 horas. A meta habitual para o paciente internado não crítico é glicemia entre 140 e 180 mg/dL, ajustada pelo médico conforme o caso. (Fonte: PROT-004 §2)"
+      },
+      {
+        "pergunta": "Modelo de receita simples do hospital.",
+        "fonte_esperada": "MOD-002 §2",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 1.4,
+        "resposta": "Campos obrigatórios: identificação do paciente; para cada item, nome do medicamento pela denominação genérica, concentração, forma farmacêutica, quantidade, via de administração, posologia e duração; data; nome do médico, registro no conselho e assinatura. (Fonte: MOD-002 §2)"
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. Quando eu devo abrir o protocolo de sepse?",
+        "fonte_esperada": "PROT-001 §2",
+        "cita_fonte_correta": false,
+        "aprovada_na_barreira": true,
+        "tentativas": 2,
+        "segundos": 3.3,
+        "resposta": "A reavaliação da sepse deve ser feita em até 6 horas: perfusão periférica, débito urinário, nível de consciência e lactato de controle. Persistindo pressão arterial média < 65 mmHg após a reposição volêmica, a equipe deve avaliar vasopressor e acionar a UTI; a decisão de transferência é sempre do médico responsável. (Fonte: PROT-001 §5)"
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. Como o protocolo conduz a hipercalemia?",
+        "fonte_esperada": "PROT-005 §4",
+        "cita_fonte_correta": false,
+        "aprovada_na_barreira": false,
+        "tentativas": 2,
+        "segundos": 2.1,
+        "resposta": "Não posso atender a esse pedido. Prescrever, indicar dose de medicamento para um paciente específico ou liberar validação médica são atos privativos do médico responsável. Posso: resumir o prontuário, trazer trechos de protocolo para apoiar a decisão do médico responsável ou apresentar dúvida para validação.\n\n⚠️ Verificação automática: não cita a fonte da informação. Confirme no protocolo antes de usar esta resposta."
+      },
+      {
+        "pergunta": "estou com a paciente [PACIENTE], [PRONTUARIO], familiar no telefone [TELEFONE]. Lista de medicamentos de alta vigilância.",
+        "fonte_esperada": "PROT-008 §4",
+        "cita_fonte_correta": false,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 0.9,
+        "resposta": "Insulinas, anticoagulantes, opioides, quimioterápicos, potássio concentrado e sedativos endovenosos, conforme o PROT-008. (Fonte: POP-003 §1)"
+      },
+      {
+        "pergunta": "As plaquetas não saíram. Posso liberar a profilaxia de TEV?",
+        "fonte_esperada": "PROT-006 §3",
+        "cita_fonte_correta": true,
+        "aprovada_na_barreira": true,
+        "tentativas": 1,
+        "segundos": 1.8,
+        "resposta": "Não. Antes de qualquer profilaxia farmacológica, verificar contraindicações: sangramento ativo, plaquetas < 50.000/mm³, coagulopatia, cirurgia ou punção neuroaxial recente e insuficiência renal grave. O hemograma com plaquetas deve estar disponível; plaquetas pendentes impedem a liberação da profilaxia farmacológica. (Fonte: PROT-006 §3)"
+      }
+    ],
+    "detalhe_pacientes": [
+      {
+        "paciente": "P-0001",
+        "alertas": 2,
+        "origem_sugestao": "llm_ajustada",
+        "tentativas": 1,
+        "problemas_1a_tentativa": [
+          []
+        ],
+        "segundos": 7.8,
+        "sugestao": "RESUMO: Paciente [PACIENTE], 67 anos, sexo F, leito 21A, diagnóstico/hipótese sepse de foco urinário, protocolos ativos PROT-001. Sinais vitais: PAM 61, FC 118, FR 26, TEMP 38,9. Exames: lactato 4,6 mmol/L (CRITICO), hemocultura PENDENTE (solicitado há 2,4 h, ATRASADO), hemograma leucócitos 19.300/mm³, creatinina 1,8 mg/dL, gasometria arterial PENDENTE (solicitado há 2,2 h).\n\nALERTAS PARA A EQUIPE:\n- [CRITICO] lactato = 4,6 mmol/L (limite crítico >= 4) (Fonte: PROT-007 §2)\n- [CRITICO] hemocultura: solicitado e sem resultado há 2,4 h (prazo do protocolo: 1 h, ATRASADO) — hemoculturas devem ser coletadas na primeira hora, antes do antimicrobiano (Fonte: PROT-001 §4)\n\nSUGESTÃO (RASCUNHO PARA VALIDAÇÃO MÉDICA):\n- Coletar as duas hemoculturas antes do antimicrobiano, conforme o POP-001; o antimicrobiano pode ser iniciado em até 45 minutos após a coleta da primeira hemocultura, conforme o PROT-001 §3.\n- Coletar gasometria arterial, exame obrigatório do protocolo de sepse (PROT-001 §4).\n- Comunicar o médico responsável em até 30 minutos, com registro e leitura de volta (PROT-007 §3 e §4; POP-002).\nEsta sugestão não é prescrição: a conduta é decisão do médico responsável (PROT-008 §3)."
+      },
+      {
+        "paciente": "P-0002",
+        "alertas": 2,
+        "origem_sugestao": "llm_ajustada",
+        "tentativas": 1,
+        "problemas_1a_tentativa": [
+          []
+        ],
+        "segundos": 7.0,
+        "sugestao": "RESUMO: caso P-0002, 58 anos, sexo M, leito UCO-3, dor torácica a esclarecer. Protocolos ativos: PROT-002. Alergias: nenhuma registrada. Sinais vitais: PAS 148, FC 96. Exames:\n- eletrocardiograma: supradesnivelamento de ST em parede inferior\n- troponina: acima do percentil 99\n- troponina de controle: PENDENTE (solicitado há 36 min)\n\nALERTAS PARA A EQUIPE:\n- [CRITICO] eletrocardiograma: supradesnivelamento de ST em parede inferior (Fonte: PROT-002 §6) — geram alerta imediato\n- [CRITICO] troponina: acima do percentil 99 (Fonte: PROT-007 §2) — troponina acima do percentil 99 com variação significativa é alerta imediato\n\nSUGESTÃO (RASCUNHO PARA VALIDAÇÃO MÉDICA):\n- Eletrocardiograma com supradesnivelamento de ST: acionar imediatamente a hemodinâmica, meta institucional de porta-balão < 90 min (PROT-002 §4).\n- Troponina acima do percentil 99: avaliação médica imediata, acionar a cardiologia (PROT-002 §4 e §5).\n- Comunicar o médico responsável em até 30 minutos, com registro e leitura de volta (PROT-007 §3 e §4; POP-002).\nEsta sugestão não é prescrição: a conduta é decisão do médico responsável (PROT-008 §3)."
+      },
+      {
+        "paciente": "P-0003",
+        "alertas": 2,
+        "origem_sugestao": "llm_ajustada",
+        "tentativas": 1,
+        "problemas_1a_tentativa": [
+          []
+        ],
+        "segundos": 8.4,
+        "sugestao": "RESUMO: Paciente [PACIENTE], [PRONTUARIO], 34 anos, sexo F, leito 12C, suspeita de cetoacidose diabética. Protocolos ativos: PROT-004. Alergias: nenhuma registrada. Sinais vitais: FC 122, FR 30. Exames:\n- glicemia: 512 mg/dL\n- potássio: PENDENTE (solicitado há 1,4 h)\n- gasometria venosa: pH 7,12\nValores críticos:\n- [CRITICO] glicemia = 512 mg/dL (limite crítico > 400) (Fonte: PROT-007 §2)\nExames pendentes:\n- [CRITICO] potássio: solicitado e sem resultado há 1,4 h (prazo do protocolo: 1 h, ATRASADO) — o potássio deve ser conhecido antes da insulina endovenosa na CAD (Fonte: PROT-004 §4)\n\nALERTAS PARA A EQUIPE:\n- [CRITICO] Potássio pendente com insulina endovenosa programada: pendência crítica do protocolo (PROT-004 §4)\n- [CRITICO] Glicemia = 512 mg/dL: valor crítico (PROT-007 §2)\n\nSUGESTÃO (RASCUNHO PARA VALIDAÇÃO MÉDICA):\n- Coletar gasometria ou eletrólitos com urgência na suspeita de CAD (PROT-004 §3).\n- Aguardar o resultado do potássio antes do início da insulina endovenosa; se houver pendência com insulina programada, registrar alerta crítico (PROT-004 §4).\n- Comunicar o médico responsável em até 30 minutos, com registro e leitura de volta (PROT-007 §3 e §4; POP-002).\nEsta sugestão não é prescrição: a conduta é decisão do médico responsável (PROT-008 §3)."
+      },
+      {
+        "paciente": "P-0004",
+        "alertas": 2,
+        "origem_sugestao": "llm_ajustada",
+        "tentativas": 1,
+        "problemas_1a_tentativa": [
+          []
+        ],
+        "segundos": 7.8,
+        "sugestao": "RESUMO: Paciente [PACIENTE], 74 anos, sexo M, leito 33B, diagnóstico/hipótese lesão renal aguda com hipercalemia. Protocolos ativos: PROT-005. Alergias: contraste iodado. Sinais vitais: PAS 132. Exames: potássio = 6,8 mEq/L, potássio de controle PENDENTE (solicitado há 3,1 h), creatinina = 3,4 mg/dL.\nVALORES CRÍTICOS:\n- [CRITICO] potássio = 6,8 mEq/L (limite crítico > 6) (Fonte: PROT-007 §2)\nEXAMES PENDENTES:\n- [CRITICO] potássio de controle: solicitado e sem resultado há 3,1 h (prazo do protocolo: 2 h, ATRASADO) — potássio de controle em até 2 horas após tratar a hipercalemia (Fonte: PROT-005 §5)\n\nSUGESTÃO (RASCUNHO PARA VALIDAÇÃO MÉDICA):\n- Potássio de 6,8 mEq/L: hipercalemia, emergência. Realizar ECG imediatamente, repetir a dosagem para afastar hemólise e comunicar o médico (PROT-005 §4).\n- Comunicar o médico responsável em até 30 minutos, com registro e leitura de volta (PROT-007 §3 e §4; POP-002).\n- Quando a hipercalemia for tratada, o potássio de controle deve ser realizado em até 2 horas, e o resultado pendente após esse prazo é pendência crítica (PROT-005 §5).\nEsta sugestão não é prescrição: a conduta é decisão do médico responsável (PROT-008 §3)."
+      },
+      {
+        "paciente": "P-0005",
+        "alertas": 1,
+        "origem_sugestao": "llm_ajustada",
+        "tentativas": 2,
+        "problemas_1a_tentativa": [
+          []
+        ],
+        "segundos": 9.8,
+        "sugestao": "RESUMO: caso P-0005, 81 anos, sexo F, leito 41D, internação clínica por insuficiência cardíaca descompensada. Protocolos ativos: PROT-006.\nALERTAS PARA A EQUIPE:\n- [ALTO] hemograma: solicitado e sem resultado há 28 h (prazo do protocolo: 24 h, ATRASADO) — plaquetas pendentes impedem liberar a profilaxia farmacológica (Fonte: PROT-006 §3)\nSUGESTÃO (RASCUNHO PARA VALIDAÇÃO MÉDICA):\n- Liberar a coleta do hemograma; a profilaxia farmacológica não pode ser iniciada antes do resultado do hemograma (PROT-006 §3).\n- Não há valores críticos nem pendências atrasadas além disso, portanto não há ação adicional definida por protocolo.\nEsta sugestão não é prescrição: a conduta é decisão do médico responsável (PROT-008 §3)."
+      },
+      {
+        "paciente": "P-0006",
+        "alertas": 1,
+        "origem_sugestao": "llm_ajustada",
+        "tentativas": 1,
+        "problemas_1a_tentativa": [
+          []
+        ],
+        "segundos": 4.6,
+        "sugestao": "RESUMO: caso P-0006, 52 anos, sexo F, leito AMB, diagnóstico/hipótese: nódulo mamário em investigação. Protocolos ativos: PROT-009.\nALERTAS PARA A EQUIPE:\n- [CRITICO] biópsia mamária: solicitado e sem resultado há 19,5833 dias (prazo do protocolo: 15 dias, ATRASADO) — biópsia em até 15 dias para BI-RADS 4 ou 5 (Fonte: PROT-009 §4)\nSUGESTÃO (RASCUNHO PARA VALIDAÇÃO MÉDICA):\n- Agendar biópsia percutânea guiada por imagem para BI-RADS 5; o prazo para biópsia indicada é 15 dias (PROT-009 §4).\n- Comunicar o médico responsável em até 30 minutos, com registro e leitura de volta (PROT-007 §3 e §4; POP-002).\nEsta sugestão não é prescrição: a conduta é decisão do médico responsável (PROT-008 §3)."
+      },
+      {
+        "paciente": "P-0007",
+        "alertas": 0,
+        "origem_sugestao": "llm_ajustada",
+        "tentativas": 1,
+        "problemas_1a_tentativa": [
+          []
+        ],
+        "segundos": 4.3,
+        "sugestao": "RESUMO: Paciente [PACIENTE], [PRONTUARIO], 45 anos, sexo M, leito 18A, diagnóstico/hipótese: pneumonia adquirida na comunidade. Protocolos ativos: PROT-003. Alergias: nenhuma registrada. Sinais vitais: FR 22, SAT 95. Exames: radiografia de tórax (consolidação em lobo inferior direito), hemograma (leucócitos 13.100/mm³), ureia (34 mg/dL). Valores críticos: nenhum. Exames pendentes: nenhum.\nALERTAS PARA A EQUIPE: nenhum valor crítico nem pendência atrasada.\nSUGESTÃO (RASCUNHO PARA VALIDAÇÃO MÉDICA):\n- Manter o seguimento previsto nos protocolos ativos; nenhuma ação adicional identificada pelas regras.\nEsta sugestão não é prescrição: a conduta é decisão do médico responsável (PROT-008 §3)."
+      }
+    ],
+    "detalhe_perguntas_paciente": [
+      {
+        "pergunta": "Quais exames estão pendentes do P-0001?",
+        "referencia": "Pendências do caso P-0001 pelos protocolos ativos:\n- [CRITICO] hemocultura: solicitado e sem resultado há 2,4 h (prazo do protocolo: 1 h, ATRASADO) — hemoculturas devem ser coletadas na primeira hora, antes do antimicrobiano (Fonte: PROT-001 §4)\n- [INFORMATIVO] gasometria arterial: solicitado e sem resultado há 2,2 h (prazo do protocolo: 6 h) — exame obrigatório do protocolo de sepse (Fonte: PROT-001 §4)\nAs pendências CRÍTICO e ALTO devem ser comunicadas à equipe conforme o PROT-007 §3.",
+        "resposta": "- [CRITICO] hemocultura: solicitado e sem resultado há 2,4 h (prazo do protocolo: 1 h, ATRASADO) — hemoculturas devem ser coletadas na primeira hora, antes do antimicrobiano (Fonte: PROT-001 §4)\n- [INFORMATIVO] gasometria arterial: solicitado e sem resultado há 2,2 h (prazo do protocolo: 6 h) — exame obrigatório do protocolo de sepse (Fonte: PROT-001 §4)",
+        "situacao_correta": true,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "O P-0001 tem algum valor crítico?",
+        "referencia": "Valores críticos do caso P-0001:\n- [CRITICO] lactato = 4,6 mmol/L (limite crítico >= 4) (Fonte: PROT-007 §2)\nDevem ser comunicados ao médico responsável em até 30 minutos (Fonte: PROT-007 §3).",
+        "resposta": "Sim, o paciente tem um valor crítico: [CRITICO] lactato = 4,6 mmol/L (limite crítico >= 4) (Fonte: PROT-007 §2).",
+        "situacao_correta": true,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "Qual a situação do exame lactato do P-0001?",
+        "referencia": "Lactato do caso P-0001: resultado disponível, 4,6 mmol/L. É valor crítico (lactato = 4,6 mmol/L (limite crítico >= 4)) e deve ser comunicado ao médico responsável em até 30 minutos (Fonte: PROT-007 §2; PROT-007 §3).",
+        "resposta": "O lactato está pendente, mas o valor crítico foi registrado: 4,6 mmol/L. O exame deve ser repetido em até 2 a 4 horas, conforme o PROT-001 §4. (Fonte: PROT-001 §4)",
+        "situacao_correta": false,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "Quais exames estão pendentes do P-0002?",
+        "referencia": "Pendências do caso P-0002 pelos protocolos ativos:\n- [INFORMATIVO] troponina de controle: solicitado e sem resultado há 36 min (prazo do protocolo: 3 h) — troponina de controle no horário previsto (Fonte: PROT-002 §3)",
+        "resposta": "EXAMES PENDENTES:\n- [INFORMATIVO] troponina de controle: solicitado e sem resultado há 36 min (prazo do protocolo: 3 h) — troponina de controle no horário previsto (Fonte: PROT-002 §3)\n- [CRITICO] hemoculturas: pendentes há mais de 1 h após o tempo zero (prazo crítico do protocolo) — hemoculturas pendentes há mais de 1 hora após o tempo zero configuram pendência crítica (Fonte: PROT-001 §4)",
+        "situacao_correta": true,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "O P-0002 tem algum valor crítico?",
+        "referencia": "Valores críticos do caso P-0002:\n- [CRITICO] eletrocardiograma: supradesnivelamento de ST em parede inferior (Fonte: PROT-002 §6)\n- [CRITICO] troponina: acima do percentil 99 (Fonte: PROT-007 §2)\nDevem ser comunicados ao médico responsável em até 30 minutos (Fonte: PROT-007 §3).",
+        "resposta": "Sim, o paciente tem dois valores críticos: eletrocardiograma com supradesnivelamento de ST (Fonte: PROT-002 §6) e troponina acima do percentil 99 (Fonte: PROT-007 §2).",
+        "situacao_correta": true,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "Qual a situação do exame eletrocardiograma do P-0002?",
+        "referencia": "Eletrocardiograma do caso P-0002: resultado disponível, supradesnivelamento de ST em parede inferior. É valor crítico (eletrocardiograma: supradesnivelamento de ST em parede inferior) e deve ser comunicado ao médico responsável em até 30 minutos (Fonte: PROT-002 §6; PROT-007 §3).",
+        "resposta": "O eletrocardiograma já foi realizado e apresenta supradesnivelamento de ST em parede inferior. Isso é um alerta imediato do protocolo de dor torácica (PROT-002 §6).",
+        "situacao_correta": true,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "Quais exames estão pendentes do P-0003?",
+        "referencia": "Pendências do caso P-0003 pelos protocolos ativos:\n- [CRITICO] potássio: solicitado e sem resultado há 1,4 h (prazo do protocolo: 1 h, ATRASADO) — o potássio deve ser conhecido antes da insulina endovenosa na CAD (Fonte: PROT-004 §4)\nAs pendências CRÍTICO e ALTO devem ser comunicadas à equipe conforme o PROT-007 §3.",
+        "resposta": "Os exames pendentes do prontuário P-0003 são:\n- [CRITICO] potássio: solicitado e sem resultado há 1,4 h (prazo do protocolo: 1 h, ATRASADO) — o potássio deve ser conhecido antes da insulina endovenosa na CAD (Fonte: PROT-004 §4)\nE ainda: gasometria venosa (solicitado, sem resultado) e hemoculturas (solicitado, sem resultado há 0,6 h, pendência crítica se > 1 h, Fonte: PROT-001 §4).",
+        "situacao_correta": true,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "O P-0003 tem algum valor crítico?",
+        "referencia": "Valores críticos do caso P-0003:\n- [CRITICO] glicemia = 512 mg/dL (limite crítico > 400) (Fonte: PROT-007 §2)\nDevem ser comunicados ao médico responsável em até 30 minutos (Fonte: PROT-007 §3).",
+        "resposta": "Sim, o prontuário P-0003 tem um valor crítico: [CRITICO] glicemia = 512 mg/dL (limite crítico > 400) (Fonte: PROT-007 §2).",
+        "situacao_correta": true,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "Qual a situação do exame glicemia do P-0003?",
+        "referencia": "Glicemia do caso P-0003: resultado disponível, 512 mg/dL. É valor crítico (glicemia = 512 mg/dL (limite crítico > 400)) e deve ser comunicado ao médico responsável em até 30 minutos (Fonte: PROT-007 §2; PROT-007 §3).",
+        "resposta": "glicemia = 512 mg/dL, limite crítico > 400 mg/dL. (Fonte: PROT-007 §2)",
+        "situacao_correta": true,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "Quais exames estão pendentes do P-0004?",
+        "referencia": "Pendências do caso P-0004 pelos protocolos ativos:\n- [CRITICO] potássio de controle: solicitado e sem resultado há 3,1 h (prazo do protocolo: 2 h, ATRASADO) — potássio de controle em até 2 horas após tratar a hipercalemia (Fonte: PROT-005 §5)\nAs pendências CRÍTICO e ALTO devem ser comunicadas à equipe conforme o PROT-007 §3.",
+        "resposta": "- [CRITICO] potássio de controle: solicitado e sem resultado há 3,1 h (prazo do protocolo: 2 h, ATRASADO) — potássio de controle em até 2 horas após tratar a hipercalemia (Fonte: PROT-005 §5)",
+        "situacao_correta": true,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "O P-0004 tem algum valor crítico?",
+        "referencia": "Valores críticos do caso P-0004:\n- [CRITICO] potássio = 6,8 mEq/L (limite crítico > 6) (Fonte: PROT-007 §2)\nDevem ser comunicados ao médico responsável em até 30 minutos (Fonte: PROT-007 §3).",
+        "resposta": "Sim, o prontuário P-0004 tem um valor crítico: [CRITICO] potássio = 6,8 mEq/L (limite crítico > 6) (Fonte: PROT-007 §2).",
+        "situacao_correta": true,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "Qual a situação do exame potássio do P-0004?",
+        "referencia": "Potássio do caso P-0004: resultado disponível, 6,8 mEq/L. É valor crítico (potássio = 6,8 mEq/L (limite crítico > 6)) e deve ser comunicado ao médico responsável em até 30 minutos (Fonte: PROT-007 §2; PROT-007 §3).",
+        "resposta": "O exame potássio de controle está pendente, com solicitação há 3,1 h (prazo do protocolo: 2 h, ATRASADO) — potássio de controle em até 2 horas após tratar a hipercalemia. (Fonte: PROT-005 §5)",
+        "situacao_correta": false,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "Quais exames estão pendentes do P-0005?",
+        "referencia": "Pendências do caso P-0005 pelos protocolos ativos:\n- [ALTO] hemograma: solicitado e sem resultado há 28 h (prazo do protocolo: 24 h, ATRASADO) — plaquetas pendentes impedem liberar a profilaxia farmacológica (Fonte: PROT-006 §3)\nAs pendências CRÍTICO e ALTO devem ser comunicadas à equipe conforme o PROT-007 §3.",
+        "resposta": "Os exames pendentes do prontuário P-0005 são:\n- [ALTO] hemograma: solicitado e sem resultado há 28 h (prazo do protocolo: 24 h, ATRASADO) — plaquetas pendentes impedem liberar a profilaxia farmacológica (Fonte: PROT-006 §3)",
+        "situacao_correta": true,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "O P-0005 tem algum valor crítico?",
+        "referencia": "Nenhum resultado disponível do caso P-0005 atinge critério de valor crítico (Fonte: PROT-007 §2).",
+        "resposta": "Não, o prontuário P-0005 não tem valores críticos ativos. (Fonte: PROT-007 §2)",
+        "situacao_correta": true,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "Qual a situação do exame hemograma do P-0005?",
+        "referencia": "Hemograma do caso P-0005: hemograma: solicitado e sem resultado há 28 h (prazo do protocolo: 24 h, ATRASADO) — plaquetas pendentes impedem liberar a profilaxia farmacológica (Fonte: PROT-006 §3).",
+        "resposta": "O hemograma está PENDENTE, solicitado há 28 horas. O protocolo prevê plaquetas pendentes como contraindicação à profilaxia farmacológica de TEV (PROT-006 §3).",
+        "situacao_correta": true,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "Quais exames estão pendentes do P-0006?",
+        "referencia": "Pendências do caso P-0006 pelos protocolos ativos:\n- [CRITICO] biópsia mamária: solicitado e sem resultado há 19,5833 dias (prazo do protocolo: 15 dias, ATRASADO) — biópsia em até 15 dias para BI-RADS 4 ou 5 (Fonte: PROT-009 §4)\nAs pendências CRÍTICO e ALTO devem ser comunicadas à equipe conforme o PROT-007 §3.",
+        "resposta": "EXAMES PENDENTES:\n- [CRITICO] biópsia mamária: solicitado e sem resultado há 19,5833 dias (prazo do protocolo: 15 dias, ATRASADO) — biópsia em até 15 dias para BI-RADS 4 ou 5 (Fonte: PROT-009 §4)",
+        "situacao_correta": true,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "O P-0006 tem algum valor crítico?",
+        "referencia": "Nenhum resultado disponível do caso P-0006 atinge critério de valor crítico (Fonte: PROT-007 §2).",
+        "resposta": "Não há valores críticos registrados no prontuário. Consulte o PROT-007 §2 para a lista completa de valores críticos no adulto. (Fonte: PROT-007 §2)",
+        "situacao_correta": true,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "Qual a situação do exame ultrassonografia mamária do P-0006?",
+        "referencia": "Ultrassonografia mamária do caso P-0006: resultado disponível, BI-RADS 5. Não atinge critério de valor crítico (Fonte: PROT-007 §2).",
+        "resposta": "O ultrassonografia mamária do paciente [PACIENTE] está classificado como BI-RADS 5. (Fonte: MOD-001 §3)",
+        "situacao_correta": true,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "Quais exames estão pendentes do P-0007?",
+        "referencia": "Pelos protocolos ativos, o caso P-0007 não tem exames pendentes.",
+        "resposta": "Não há valores críticos a comunicar, mas há um prazo a cumprir: o lactato inicial foi 1,8 mmol/L, o prazo para repetir é de 2 a 4 horas (PROT-001 §4).",
+        "situacao_correta": false,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "O P-0007 tem algum valor crítico?",
+        "referencia": "Nenhum resultado disponível do caso P-0007 atinge critério de valor crítico (Fonte: PROT-007 §2).",
+        "resposta": "Não, não há valores críticos pendentes de comunicação: o PROT-007 lista os valores críticos do adulto e o prazo para comunicação, e o POP-002 define o SBAR para valores críticos e pendências críticas. (Fonte: PROT-007 §2 e §3)",
+        "situacao_correta": true,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "Qual a situação do exame radiografia de tórax do P-0007?",
+        "referencia": "Radiografia de tórax do caso P-0007: resultado disponível, consolidação em lobo inferior direito. Não atinge critério de valor crítico (Fonte: PROT-007 §2).",
+        "resposta": "O exame radiografia de tórax do paciente [PACIENTE] mostrou consolidação em lobo inferior direito. A radiografia de tórax é obrigatória no diagnóstico de PAC (PROT-003 §2). (Fonte: PROT-003 §2)",
+        "situacao_correta": true,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "Qual a situação do exame hemocultura do P-0001?",
+        "referencia": "Hemocultura do caso P-0001: hemocultura: solicitado e sem resultado há 2,4 h (prazo do protocolo: 1 h, ATRASADO) — hemoculturas devem ser coletadas na primeira hora, antes do antimicrobiano (Fonte: PROT-001 §4).",
+        "resposta": "O exame hemocultura está pendente há 2,4 h, o que é pendência crítica do protocolo, pois as hemoculturas devem ser coletadas na primeira hora, antes do antimicrobiano (PROT-001 §4).",
+        "situacao_correta": true,
+        "aprovada_na_barreira": true
+      },
+      {
+        "pergunta": "Qual a situação do exame hemocultura do P-0001?",
+        "referencia": "Hemocultura do caso P-0001: resultado disponível, positiva para bacilo gram-negativo. É valor crítico (hemocultura: positiva para bacilo gram-negativo) e deve ser comunicado ao médico responsável em até 30 minutos (Fonte: PROT-007 §2; PROT-007 §3).",
+        "resposta": "O exame hemocultura do paciente [PACIENTE] está PENDENTE há 1,1 h, o que não é pendência crítica (PROT-001 §4).",
+        "situacao_correta": false,
+        "aprovada_na_barreira": true
+      }
+    ]
+  }
+}
