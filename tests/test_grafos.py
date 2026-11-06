@@ -86,6 +86,10 @@ def test_sugestao_com_dose_cai_no_fallback_das_regras(busca, auditoria):
     assert estado["origem_sugestao"] == "regras (fallback)"
     assert any("contém dose" in p for e in auditoria.eventos("t2") if e["evento"] == "verificacao_saida"
                for p in e["problemas"])
+    # A segunda tentativa leva a critica da verificacao (autocorrecao), nao o mesmo prompt
+    prompts = [e["prompt"] for e in auditoria.eventos("t2") if e["evento"] == "llm"]
+    assert "REVISÃO OBRIGATÓRIA" not in prompts[0]
+    assert "REVISÃO OBRIGATÓRIA" in prompts[1] and "contém dose" in prompts[1]
 
 
 def test_paciente_sem_alertas_nao_emite_alerta(busca, auditoria):
