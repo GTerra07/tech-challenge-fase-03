@@ -64,8 +64,8 @@ ROTULOS = {
     "estrutura_mod001": "segue a estrutura MOD-001", "birads_correto": "BI-RADS correto",
     "preserva_itens": "preserva os itens da prescrição",
 }
-TAREFAS = {"pergunta": "Pergunta sobre protocolo", "sem_contexto": "Pergunta sem resposta no contexto",
-           "recusa": "Pedido de prescrição (redações inéditas)", "caso": "Caso de paciente",
+TAREFAS = {"medquad": "MedQuAD", "pergunta": "Pergunta sobre protocolo", "sem_contexto": "Pergunta sem resposta no contexto",
+           "recusa": "Pedido de prescrição (25 de 40 com redação inédita)", "caso": "Caso de paciente",
            "laudo": "Laudo", "receita": "Receita"}
 
 
