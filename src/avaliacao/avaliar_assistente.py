@@ -115,7 +115,9 @@ def avaliar_ponta_a_ponta(busca, n_perguntas: int = 20, modelo: str | None = Non
     from src.seguranca.auditoria import Auditoria
 
     banco.criar_banco()
-    aud = Auditoria(PASTA_OUTPUTS / "avaliacao" / f"auditoria_avaliacao{'_' + modelo if modelo else ''}.jsonl")
+    arquivo_log = PASTA_OUTPUTS / "avaliacao" / f"auditoria_avaliacao{'_' + modelo if modelo else ''}.jsonl"
+    arquivo_log.unlink(missing_ok=True)   # um log por rodada: execucoes repetidas tem os mesmos ids
+    aud = Auditoria(arquivo_log)
     redator = Redator(criar_llm_ajustada(modelo) if modelo else None, auditoria=aud)
 
     perguntas = _perguntas_de_teste()[:n_perguntas]
@@ -137,9 +139,13 @@ def avaliar_ponta_a_ponta(busca, n_perguntas: int = 20, modelo: str | None = Non
         ex = f"aval-{rotulo}"
         e = grafo_q.invoke({"execucao": ex, "pergunta": q}, {"configurable": {"thread_id": ex}})
         ref = resposta(banco.carregar_paciente(pid), tipo, exame)
+        trilha = " ".join(e.get("trilha", []))
         return {"pergunta": q, "referencia": ref, "resposta": e["resposta"],
                 "situacao_correta": situacao(e["resposta"], tipo) == situacao(ref, tipo),
-                "aprovada_na_barreira": e.get("verificacao", {}).get("aprovada", False)}
+                "aprovada_na_barreira": e.get("verificacao", {}).get("aprovada", False),
+                # o modelo acertou sozinho, sem a correcao pela verificacao factual?
+                "certa_na_1a_tentativa": e.get("tentativas", 0) == 1 and e.get("verificacao", {}).get("aprovada", False),
+                "resposta_montada_do_prontuario": "responder_pelo_prontuario" in trilha}
 
     linhas_pp = []
     for p in banco.listar_pacientes():
@@ -179,8 +185,11 @@ def avaliar_ponta_a_ponta(busca, n_perguntas: int = 20, modelo: str | None = Non
         "perguntas_paciente": {"n": len(linhas_pp),
                                "situacao_correta": round(mean(l["situacao_correta"] for l in linhas_pp), 3),
                                "aprovada_na_barreira": round(mean(l["aprovada_na_barreira"] for l in linhas_pp), 3),
+                               "certa_na_1a_tentativa": round(mean(l["certa_na_1a_tentativa"] for l in linhas_pp), 3),
+                               "montadas_do_prontuario": sum(l["resposta_montada_do_prontuario"] for l in linhas_pp),
                                "resultado_liberado_antes_correto": antes["situacao_correta"],
-                               "resultado_liberado_depois_correto": depois["situacao_correta"]},
+                               "resultado_liberado_depois_correto": depois["situacao_correta"],
+                               "resultado_liberado_depois_na_1a_tentativa": depois["certa_na_1a_tentativa"]},
         "detalhe_perguntas": linhas_q, "detalhe_pacientes": linhas_p,
         "detalhe_perguntas_paciente": linhas_pp + [antes, depois],
     }

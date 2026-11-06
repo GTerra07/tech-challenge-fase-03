@@ -122,6 +122,7 @@ graph TD;
 	responder(responder)
 	verificar_resposta(verificar_resposta)
 	anotar_ressalva(anotar_ressalva)
+	responder_pelo_prontuario(responder_pelo_prontuario)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> triagem_entrada;
 	buscar_protocolos -.-> responder;
@@ -135,8 +136,10 @@ graph TD;
 	verificar_resposta -. &nbsp;ok&nbsp; .-> __end__;
 	verificar_resposta -. &nbsp;ressalva&nbsp; .-> anotar_ressalva;
 	verificar_resposta -. &nbsp;tentar_de_novo&nbsp; .-> responder;
+	verificar_resposta -. &nbsp;prontuario&nbsp; .-> responder_pelo_prontuario;
 	anotar_ressalva --> __end__;
 	recusar --> __end__;
+	responder_pelo_prontuario --> __end__;
 	sem_base --> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2
 	classDef first fill-opacity:0
@@ -148,6 +151,7 @@ graph TD;
 - **Prontuário atualizado.** Se a pergunta cita um paciente (`P-0000`), as ferramentas leem o banco no momento da pergunta.
 - **Sem base, sem resposta.** Se a melhor seção recuperada tem confiança abaixo de 0,25, o modelo não é acionado.
 - **Fonte verificada.** Toda fonte citada na resposta precisa estar entre as recuperadas; senão, nova tentativa e, persistindo, a resposta sai com ressalva explícita.
+- **Fato verificado contra o prontuário.** Em perguntas sobre exames, pendências e valores críticos de um paciente, o que a resposta afirma é comparado com o que as regras calculam sobre o prontuário (`checagem_factual.py`). Divergiu: a nova tentativa recebe o que o prontuário indica; persistindo, `responder_pelo_prontuario` entrega a resposta montada dos dados, com a indicação explícita disso.
 
 ---
 

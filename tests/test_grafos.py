@@ -156,6 +156,34 @@ def test_pergunta_sobre_paciente_usa_prontuario_atualizado(busca, auditoria):
     assert "[CRITICO] hemocultura: positiva" in depois["contexto"]
 
 
+def test_resposta_que_contradiz_o_prontuario_e_corrigida_pelos_dados(busca, auditoria):
+    """O cenario real: resultado liberado, e o modelo insiste em 'pendente' (v1 e v2 fizeram isso)."""
+    banco.registrar_resultado("P-0001", "hemocultura", "positiva para bacilo gram-negativo")
+    errada = "A hemocultura do P-0001 está pendente, sem resultado (Fonte: PROT-001 §4)."
+    redator = Redator(FakeListChatModel(responses=[errada, errada]), auditoria)
+    grafo = criar_grafo_pergunta(redator, busca, auditoria)
+    estado = grafo.invoke({"execucao": "q5", "pergunta": "Qual a situação do exame hemocultura do P-0001?"},
+                          {"configurable": {"thread_id": "q5"}})
+    # 1a reprovacao: a nova tentativa recebe o que o prontuario indica
+    prompts = [e["prompt"] for e in auditoria.eventos("q5") if e["evento"] == "llm"]
+    assert "o prontuário indica" in prompts[1] and "positiva" in prompts[1]
+    # 2a reprovacao: a resposta sai dos dados, com a indicacao explicita
+    assert "positiva para bacilo gram-negativo" in estado["resposta"]
+    assert "montada diretamente a partir do prontuário" in estado["resposta"]
+    assert "fallback_prontuario" in [e["evento"] for e in auditoria.eventos("q5")]
+
+
+def test_resposta_coerente_com_o_prontuario_passa(busca, auditoria):
+    banco.registrar_resultado("P-0001", "hemocultura", "positiva para bacilo gram-negativo")
+    certa = ("A hemocultura do P-0001 tem resultado disponível: positiva para bacilo gram-negativo, valor crítico "
+             "(Fonte: PROT-007 §2).")
+    redator = Redator(FakeListChatModel(responses=[certa]), auditoria)
+    grafo = criar_grafo_pergunta(redator, busca, auditoria)
+    estado = grafo.invoke({"execucao": "q6", "pergunta": "Qual a situação do exame hemocultura do P-0001?"},
+                          {"configurable": {"thread_id": "q6"}})
+    assert estado["verificacao"]["aprovada"] and estado["tentativas"] == 1
+
+
 def test_citacao_inventada_e_reprovada_e_anotada(busca, auditoria):
     inventada = "Resposta qualquer (Fonte: PROT-999 §9)"
     redator = Redator(FakeListChatModel(responses=[inventada, inventada]), auditoria)

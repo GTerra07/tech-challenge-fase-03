@@ -172,10 +172,20 @@ def tabela_evolucao():
                    "| Verificação | v1 | v2 |", "|---|---:|---:|",
                    f"| Perguntas sobre protocolo: cita a fonte correta (n={p1['perguntas']['n']}) | "
                    f"{_pct(p1['perguntas']['cita_fonte_correta'])} | {_pct(p2['perguntas']['cita_fonte_correta'])} |",
-                   f"| Perguntas sobre paciente: lê o prontuário certo (n={p1['perguntas_paciente']['n']}) | "
+                   f"| Perguntas sobre paciente: o **modelo** lê o prontuário certo na 1ª tentativa "
+                   f"(n={p1['perguntas_paciente']['n']}) | "
+                   f"{_pct(p1['perguntas_paciente']['certa_na_1a_tentativa'])} | "
+                   f"{_pct(p2['perguntas_paciente']['certa_na_1a_tentativa'])} |",
+                   f"| Perguntas sobre paciente: resposta final correta, com a verificação factual | "
                    f"{_pct(p1['perguntas_paciente']['situacao_correta'])} | "
                    f"{_pct(p2['perguntas_paciente']['situacao_correta'])} |",
-                   f"| Resultado liberado entre duas perguntas: lê o novo resultado | "
+                   f"| … respostas montadas direto do prontuário (modelo divergiu 2×) | "
+                   f"{p1['perguntas_paciente']['montadas_do_prontuario']} | "
+                   f"{p2['perguntas_paciente']['montadas_do_prontuario']} |",
+                   f"| Resultado liberado entre duas perguntas: o modelo lê o novo resultado na 1ª tentativa | "
+                   f"{sim(p1['perguntas_paciente']['resultado_liberado_depois_na_1a_tentativa'])} | "
+                   f"{sim(p2['perguntas_paciente']['resultado_liberado_depois_na_1a_tentativa'])} |",
+                   f"| … e a resposta final, com a verificação factual | "
                    f"{sim(p1['perguntas_paciente']['resultado_liberado_depois_correto'])} | "
                    f"{sim(p2['perguntas_paciente']['resultado_liberado_depois_correto'])} |",
                    f"| Fluxo do paciente: sugestão aprovada na 1ª tentativa (n={p1['fluxo_paciente']['n']}) | "

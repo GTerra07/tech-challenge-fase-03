@@ -9,6 +9,7 @@ graph TD;
 	responder(responder)
 	verificar_resposta(verificar_resposta)
 	anotar_ressalva(anotar_ressalva)
+	responder_pelo_prontuario(responder_pelo_prontuario)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> triagem_entrada;
 	buscar_protocolos -.-> responder;
@@ -22,8 +23,10 @@ graph TD;
 	verificar_resposta -. &nbsp;ok&nbsp; .-> __end__;
 	verificar_resposta -. &nbsp;ressalva&nbsp; .-> anotar_ressalva;
 	verificar_resposta -. &nbsp;tentar_de_novo&nbsp; .-> responder;
+	verificar_resposta -. &nbsp;prontuario&nbsp; .-> responder_pelo_prontuario;
 	anotar_ressalva --> __end__;
 	recusar --> __end__;
+	responder_pelo_prontuario --> __end__;
 	sem_base --> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2
 	classDef first fill-opacity:0
