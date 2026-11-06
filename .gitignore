@@ -54,7 +54,8 @@ data/externo/
 # nem falsa (regerada por src/dados/gerador_interno.py).
 data/bruto/
 # Modelo ajustado: o adaptador LoRA e o GGUF têm GBs; vão no Drive
-modelo/
+modelo/*
+!modelo/Modelfile
 *.gguf
 *.safetensors
 # Índice vetorial e banco são regerados a partir dos arquivos versionados

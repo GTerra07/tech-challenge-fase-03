@@ -1,0 +1,16 @@
+FROM ./assistente-medico.Q4_K_M.gguf
+TEMPLATE """Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+
+### Instruction:
+{{ .System }}
+
+### Input:
+{{ .Prompt }}
+
+### Response:
+"""
+PARAMETER stop "<|eot_id|>"
+PARAMETER stop "<|end_of_text|>"
+PARAMETER stop "### Instruction:"
+PARAMETER temperature 0.1
+PARAMETER num_ctx 4096
