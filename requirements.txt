@@ -30,11 +30,17 @@ sentence-transformers>=3.0.0
 # --- LangGraph: fluxos com estado, validacao humana, checkpointer ---
 langgraph>=0.2.60
 
-# --- Busca vetorial (Aula 3 de LangGraph) ---
+# --- Busca nos protocolos (Aula 3 de LangGraph): densa + lexical (hibrida) ---
 faiss-cpu>=1.8.0
+# BM25 acerta codigos e siglas exatos (PROT-001, CURB-65, BI-RADS) onde o vetor erra
+rank_bm25>=0.2.2
 
 # --- Variaveis de ambiente ---
 python-dotenv>=1.0.0
+
+# --- Metricas de avaliacao (ROUGE e BLEU, Guia de Prompts Aula 1) ---
+rouge-score>=0.1.2
+sacrebleu>=2.4.0
 
 # --- Graficos do relatorio ---
 matplotlib>=3.8.0

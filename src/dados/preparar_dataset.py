@@ -21,6 +21,7 @@ import random
 from collections import Counter, defaultdict
 
 from src.config import PASTA_BRUTO, PASTA_EXTERNO, PASTA_OUTPUTS, PASTA_PROCESSADO, SEMENTE
+from src.avaliacao.metricas import fontes_citadas
 from src.dados import conhecimento_interno as ci
 from src.dados.curadoria import Relatorio, curar
 from src.dados.documentos import carregar_secoes, indice_por_fonte
@@ -77,8 +78,11 @@ def exemplos_internos(rng: random.Random) -> tuple[list[dict], dict[str, list[st
         pergunta = anonimizar(r["texto_bruto"])
         alvo = por_fonte[r["fonte"]]
         divisao = "teste" if r["id"].endswith(f"-{PARAFRASE_FAQ_TESTE}") else None
+        # Secoes que a propria resposta menciona alem da principal (ex.: a resposta
+        # sobre SBAR remete a leitura de volta do POP-002 §3) tambem vao no contexto.
+        extras = [por_fonte[f] for f in sorted(fontes_citadas(r["resposta"]) - {alvo.fonte}) if f in por_fonte]
         for v in range(3 if divisao is None else 1):
-            ctx = distratores({alvo.fonte}, rng.randint(1, 2)) + [alvo]
+            ctx = distratores({alvo.fonte, *(x.fonte for x in extras)}, rng.randint(1, 2)) + [alvo] + extras
             rng.shuffle(ctx)
             exemplos.append(_ex(f"{r['id']}-v{v}", "interno", "pergunta", fmt.INSTRUCAO_PERGUNTA,
                                 fmt.entrada_pergunta(_contexto(ctx), pergunta),
@@ -93,9 +97,10 @@ def exemplos_internos(rng: random.Random) -> tuple[list[dict], dict[str, list[st
     for r in _ler("pedidos_indevidos.jsonl"):
         pii[r["id"]] = r["pii"]
         template = int(r["id"].split("-")[1]) // POR_TEMPLATE_RECUSA
-        ctx = distratores(set(), rng.randint(1, 2))
-        if rng.random() < 0.5:
-            ctx.append(por_fonte["PROT-008 §3"])
+        # A recusa cita PROT-008 §2 e §3, entao as duas secoes vao sempre no contexto.
+        ctx = distratores({"PROT-008 §2", "PROT-008 §3"}, rng.randint(0, 2))
+        ctx += [por_fonte["PROT-008 §2"], por_fonte["PROT-008 §3"]]
+        rng.shuffle(ctx)
         exemplos.append(_ex(r["id"], "interno", "recusa", fmt.INSTRUCAO_PERGUNTA,
                             fmt.entrada_pergunta(_contexto(ctx), anonimizar(r["texto_bruto"])), r["resposta"],
                             divisao="teste" if template in TEMPLATES_RECUSA_TESTE else None, fonte="PROT-008 §2"))
@@ -104,7 +109,9 @@ def exemplos_internos(rng: random.Random) -> tuple[list[dict], dict[str, list[st
     for r in _ler("casos_pacientes.jsonl"):
         pii[r["id"]] = r["pii"]
         p = r["paciente"]
-        fontes = {a.fonte for a in regras.alertas(p)} | {"PROT-008 §3"}
+        # Mesmas secoes que o grafo coloca no contexto (regras.fontes_para_contexto):
+        # a resposta de referencia so cita o que esta na entrada.
+        fontes = set(regras.fontes_para_contexto(p))
         fontes |= {f"{prot} §1" for prot in p["protocolos_ativos"] if f"{prot} §1" in por_fonte}
         ctx = [por_fonte[f] for f in sorted(fontes) if f in por_fonte]
         exemplos.append(_ex(r["id"], "interno", "caso", fmt.INSTRUCAO_CASO,
@@ -145,7 +152,8 @@ def exemplos_medquad(rng: random.Random) -> list[dict]:
     from datasets import load_dataset
     ds = load_dataset("lavita/MedQuAD", split="train", cache_dir=str(PASTA_EXTERNO / "hf"))
     exemplos, perguntas = [], set()
-    for r in ds:
+    # question_id do MedQuAD se repete entre fontes diferentes: o id e o indice da linha.
+    for i, r in enumerate(ds):
         resposta = (r["answer"] or "").strip()
         chave = (r["question"] or "").strip().lower()
         # Pre-filtro de volume: o MedQuAD tem 47 mil linhas, parte sem resposta
@@ -154,7 +162,7 @@ def exemplos_medquad(rng: random.Random) -> list[dict]:
         if not resposta or chave in perguntas or not (150 <= len(resposta) <= 1500):
             continue
         perguntas.add(chave)
-        exemplos.append(_ex(f"medquad-{r['question_id']}", "medquad", "medquad", fmt.INSTRUCAO_MEDQUAD,
+        exemplos.append(_ex(f"medquad-{i:05d}", "medquad", "medquad", fmt.INSTRUCAO_MEDQUAD,
                             f"QUESTION: {r['question']}",
                             f"{resposta}\n(Source: {r['document_source']} — {r['document_url']})",
                             fonte=r["document_url"]))

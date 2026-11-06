@@ -39,8 +39,14 @@ class Relatorio:
 
 
 def _chave(ex: dict) -> str:
+    """
+    Duplicata = mesma instrucao e mesma entrada, independentemente da saida.
+    Comparar so a entrada pega tambem o caso mais grave: a mesma entrada com duas
+    saidas diferentes (rotulo contraditorio), e impede que um exemplo apareca no
+    treino e no teste com outro identificador.
+    """
     norm = lambda s: re.sub(r"\W+", " ", s.lower()).strip()  # noqa: E731
-    return hashlib.sha1(f"{norm(ex['instruction'])}|{norm(ex['input'])}|{norm(ex['output'])}".encode()).hexdigest()
+    return hashlib.sha1(f"{norm(ex['instruction'])}|{norm(ex['input'])}".encode()).hexdigest()
 
 
 def curar(exemplos: list[dict], pii_por_id: dict[str, list[str]], relatorio: Relatorio) -> list[dict]:
@@ -73,7 +79,7 @@ def curar(exemplos: list[dict], pii_por_id: dict[str, list[str]], relatorio: Rel
                 continue
         chave = _chave(ex)
         if chave in vistos:
-            relatorio.remover("duplicata", ex)
+            relatorio.remover("duplicata (mesma entrada)", ex)
             continue
         vistos.add(chave)
         aprovados.append(ex)
