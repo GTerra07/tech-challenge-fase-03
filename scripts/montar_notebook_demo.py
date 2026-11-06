@@ -140,7 +140,12 @@ def perguntar(pergunta):
     print('PERGUNTA:', pergunta)
     print('FONTES NO CONTEXTO:', ', '.join(e.get('fontes_contexto', [])), f"| confiança {e.get('confianca', 0):.2f}")
     print('\\nRESPOSTA:\\n' + e['resposta'])
-    print('\\nverificação:', e.get('verificacao', {}).get('problemas') or 'aprovada', '\\n' + '-' * 100)
+    print('\\nTRILHA (validação):')
+    for passo in e['trilha']:
+        if passo.split(':')[0] in ('triagem_entrada', 'responder', 'verificar_resposta', 'recusar', 'sem_base',
+                                   'responder_pelo_prontuario', 'anotar_ressalva'):
+            print('  -', passo[:230])
+    print('-' * 100)
     return e
 
 perguntar('Qual o prazo para comunicar um valor crítico ao médico?')

@@ -219,14 +219,16 @@ avalia e exporta o modelo em **GGUF q4_k_m** para o Ollama.
 ![Curva de perda](../outputs/fine_tuning/curva_perda.png)
 
 <!-- analise:treino -->
-A perda de validação caiu em todas as medições (0,954 → 0,900 → 0,867 → 0,853), sem o sinal clássico de
-sobreajuste (validação subindo enquanto o treino desce). A perda de treino oscila entre lotes porque o
-dataset mistura tarefas de dificuldade muito diferente: as internas (formato fixo) ficam perto de zero, e as
-públicas (texto livre do MedQuAD) dominam a média. A diferença entre treino e validação vem da mesma mistura.
+A tabela e a curva são do **modelo final (v2)**. A perda de validação caiu em todas as medições
+(0,831 → 0,731 → 0,706 → 0,693 → 0,689), sem o sinal clássico de sobreajuste (validação subindo enquanto o
+treino desce); a última melhora é pequena, sinal de que uma época bastou. A perda de treino oscila entre lotes
+porque o dataset mistura tarefas de dificuldade muito diferente: as internas (formato fixo) ficam perto de
+zero, e as públicas (texto livre do MedQuAD) dominam a média.
 
-**Rastreabilidade.** O modelo avaliado foi treinado no dataset do commit `9b9a3a6`. Depois do treino, um
-bug nas regras foi corrigido (seção 11.5): ele afetava 5 dos 1.488 exemplos de treino. O dataset versionado
-hoje é o corrigido; a avaliação abaixo usa o conjunto de teste daquele commit, o mesmo do treino.
+**Foram treinadas duas versões** (seção 6.5): o **v1**, sobre o dataset do commit `9b9a3a6` (1.488 exemplos,
+186 passos, 41 min, validação 0,954 → 0,853, resultados em `outputs/fine_tuning_v1/`), e o **v2**, sobre o
+dataset do commit `f9ac639` (o versionado hoje), que corrigiu dois descompassos entre treino e inferência
+revelados pela demonstração do v1. Cada avaliação usa o conjunto de teste do seu próprio commit.
 <!-- /analise:treino -->
 
 ---
@@ -408,7 +410,7 @@ conclusão errada com aparência de medição).
 | Pergunta sem resposta no contexto — ROUGE-L (n=19) | 0,166 | 0,391 | 0,225 |
 | Pedido de prescrição (25 de 40 com redação inédita) — ROUGE-L (n=40) | 0,245 | 1,000 | 0,755 |
 | Caso de paciente — ROUGE-L (n=30) | 0,274 | 0,965 | 0,692 |
-| pergunta_paciente — ROUGE-L (n=30) | 0,195 | 0,876 | 0,681 |
+| Pergunta sobre paciente — ROUGE-L (n=30) | 0,195 | 0,876 | 0,681 |
 | Laudo — ROUGE-L (n=7) | 0,338 | 0,978 | 0,640 |
 | Receita — ROUGE-L (n=2) | 0,479 | 1,000 | 0,521 |
 | MedQuAD — BLEU | 6,3 | 23,4 | 17,1 |
@@ -416,7 +418,7 @@ conclusão errada com aparência de medição).
 | Pergunta sem resposta no contexto — BLEU | 0,7 | 22,6 | 22,0 |
 | Pedido de prescrição (25 de 40 com redação inédita) — BLEU | 7,6 | 100,0 | 92,4 |
 | Caso de paciente — BLEU | 6,6 | 95,0 | 88,4 |
-| pergunta_paciente — BLEU | 5,6 | 80,2 | 74,6 |
+| Pergunta sobre paciente — BLEU | 5,6 | 80,2 | 74,6 |
 | Laudo — BLEU | 7,6 | 96,4 | 88,8 |
 | Receita — BLEU | 14,2 | 100,0 | 85,8 |
 
@@ -432,9 +434,9 @@ conclusão errada com aparência de medição).
 | Caso de paciente (n=30) | cobre os alertas críticos | 100,0% | 100,0% |
 | Caso de paciente (n=30) | marca como rascunho | 13,3% | **100,0%** |
 | Caso de paciente (n=30) | não indica dose | 100,0% | 100,0% |
-| pergunta_paciente (n=30) | situacao_correta | 56,7% | **86,7%** |
-| pergunta_paciente (n=30) | não indica dose | 100,0% | 100,0% |
-| pergunta_paciente (n=30) | cobre_itens_do_prontuario | 100,0% | 100,0% |
+| Pergunta sobre paciente (n=30) | lê o prontuário certo | 56,7% | **86,7%** |
+| Pergunta sobre paciente (n=30) | não indica dose | 100,0% | 100,0% |
+| Pergunta sobre paciente (n=30) | cita os itens do prontuário | 100,0% | 100,0% |
 | Laudo (n=7) | segue a estrutura MOD-001 | 0,0% | **100,0%** |
 | Laudo (n=7) | BI-RADS correto | 0,0% | **80,0%** |
 | Receita (n=2) | preserva os itens da prescrição | 100,0% | 100,0% |
@@ -442,41 +444,40 @@ conclusão errada com aparência de medição).
 <!-- /tabela:modelo -->
 
 <!-- analise:modelo -->
+Tabelas do **modelo final (v2)** contra o modelo base, no mesmo conjunto de teste.
+
 **O que o fine-tuning ensinou — e funcionou.**
 
-- **Recusar prescrição**: 70% → **100%**, inclusive nas 25 redações de pedido que nunca apareceram no treino.
-  O modelo original atendia 3 em cada 10 pedidos de dose ou prescrição.
-- **Formato da casa**: laudos no modelo MOD-001 de 0% → **100%**; sugestões e receitas marcadas como rascunho
-  de 37% e 33% → **100%**. Esse é o tipo de coisa que só o fine-tuning ensina: o modelo original não tinha como
-  saber a estrutura de laudo do hospital.
-- **Admitir que o contexto não responde**: 4,5% → **68%**. O original quase sempre respondia mesmo quando os
-  trechos recuperados não tratavam do assunto — inventando a partir do conhecimento geral.
-- **PubMedQA**: acurácia 0,55 → **0,75**. O número esconde o dado mais revelador: o modelo original respondia
-  *yes* para 199 das 200 perguntas (a acurácia de 0,55 é a proporção de *yes* no teste). O ajustado passou a
-  distinguir *yes* de *no*; ainda nunca escolhe *maybe*, a classe mais rara (11% do dataset).
-- **Perplexidade** 3,88 → **2,06** (−47%) sobre as respostas de referência — medida em 120 exemplos de
-  perguntas, recusas e MedQuAD; casos, laudos e receitas ficaram fora dessa amostra pelo corte, e estão
-  cobertos pelas verificações de comportamento.
+- **Recusar prescrição**: 62,5% → **100%**, inclusive nas 25 redações de pedido que nunca apareceram no
+  treino. O modelo original atendia mais de 1 em cada 3 pedidos de dose ou prescrição.
+- **Formato da casa**: laudos no modelo MOD-001 de 0% → **100%**; sugestões de conduta marcadas como rascunho
+  de 13% → **100%**. É o tipo de coisa que só o fine-tuning ensina: o modelo original não tinha como saber a
+  estrutura de laudo do hospital nem a regra de que sugestão é rascunho.
+- **Ler o prontuário numa pergunta sobre o paciente**: 56,7% → **86,7%** (tarefa nova do v2, seção 6.5).
+- **PubMedQA**: acurácia 0,545 → **0,755**. O número esconde o dado mais revelador: o modelo original responde
+  *yes* para quase tudo (a acurácia de 0,545 é a proporção de *yes* no teste). O ajustado passou a distinguir
+  *yes* de *no*; ainda nunca escolhe *maybe*, a classe mais rara (11% do dataset).
+- **Perplexidade** 3,37 → **1,30** (−61%) sobre as respostas de referência de todas as tarefas internas e do
+  MedQuAD (15 exemplos por tarefa).
 
-**O que piorou — e por quê.** A citação da fonte correta caiu de **95% para 82,5%** (33 de 40). A análise
-das 7 falhas mostra a causa:
+**O que não melhorou — e por quê.**
 
-| Falha | Casos | Leitura |
+| Ponto | Base → ajustado | Leitura |
 |---|---:|---|
-| Disse "os trechos não contêm a informação" com a resposta no contexto | 5 | **Cautela excessiva**: efeito colateral de ensinar a admitir quando não sabe. O original nunca fez isso (0/40) |
-| Citou a seção secundária em vez da principal (POP-002 §3 em vez de §2) | 1 | Resposta correta, fonte parcialmente correta |
-| Respondeu outra pergunta, a partir de um trecho distrator do contexto | 1 | Erro real: perguntado sobre dupla checagem, respondeu sobre BI-RADS citando PROT-009 §3 |
+| Cita a fonte correta | 97,5% → 92,5% | 3 falhas em 40: uma citou o POP-004 em vez do PROT-004 com o conteúdo certo; uma recusou uma pergunta legítima sobre profilaxia de TEV como se fosse pedido de prescrição; uma disse não haver informação com a resposta no contexto |
+| Admite que o contexto não responde | 5,3% → 31,6% | Melhorou sobre o base, mas é o ponto mais fraco do v2 (no v1 era 68%, seção 6.5): com só 16 exemplos desse tipo no treino, o modelo ainda responde, na maioria das vezes, quando os trechos não tratam do assunto |
+| Pergunta sobre paciente: as 4 falhas | — | Todas de **comparação numérica**: "pH 7,08 não atinge critério crítico" (o limite é 7,2), "plaquetas 18.000 não atinge" (o limite é 20.000). O bloco de valores críticos calculado pelas regras estava no contexto |
 
-É um *trade-off* clássico entre utilidade e segurança: o modelo ajustado erra **mais para o lado seguro**
-(abstém-se 12,5% das vezes sem necessidade) e **muito menos para o lado perigoso** (o original respondia com
-confiança 95% das vezes em que **não** havia base). Para um assistente médico, abster-se sem necessidade é
-inconveniente; responder sem base é risco. Ainda assim, a cautela excessiva é o principal ponto a melhorar —
-o caminho é aumentar, no treino, a proporção de exemplos com a resposta presente entre distratores parecidos.
+A última linha é a justificativa mais direta de uma decisão de projeto: **comparar número com limite não é
+tarefa para a LLM**. No assistente, os valores críticos vêm das regras, e a verificação factual (seção 6.4)
+reprova a resposta que contradiz o prontuário.
 
-**O caso que nenhuma camada pega.** A resposta sobre BI-RADS citou uma seção que **estava** no contexto (como
-distrator), então a barreira de saída — que verifica se a fonte citada foi recuperada — a aprovaria. A
-barreira prova que a citação não é inventada, não que é a pertinente. É 1 caso em 40, e está registrado como
-limitação (seção 11.3).
+**O *trade-off* entre utilidade e segurança.** Abster-se sem necessidade é inconveniente; responder sem base
+é risco. O v1 errava mais para o lado seguro (abstinha-se em 12,5% das perguntas que tinham resposta); o v2
+quase não se abstém sem necessidade (1 em 40), mas também se abstém pouco quando deveria. No assistente, a
+camada "sem base" (confiança da busca abaixo de 0,25) cobre as perguntas fora do escopo **antes** do modelo
+(8/8 na seção 6.3), o que reduz o peso dessa fraqueza — mas não a elimina para perguntas do domínio cujo
+trecho não foi recuperado.
 <!-- /analise:modelo -->
 
 ### 6.3 Avaliação do assistente como sistema
@@ -515,35 +516,48 @@ cobrir as três redações de todas as perguntas frequentes.
 ### 6.4 Ponta a ponta com a LLM ajustada
 
 <!-- tabela:ponta_a_ponta -->
+Modelo v2 (final), servido pelo Ollama:
+
 | Fluxo | Métrica | Resultado |
 |---|---|---:|
-| Perguntas clínicas (n=20) | cita a fonte correta | 90,0% |
-| | aprovada na barreira de saída | 100,0% |
-| | latência mediana | 2,0 s |
+| Perguntas sobre protocolo (n=20) | cita a fonte correta | 55,0% |
+| | aprovada na barreira de saída | 90,0% |
+| | latência mediana | 2,2 s |
+| Perguntas sobre paciente (n=21) | modelo lê o prontuário certo na 1ª tentativa | 85,7% |
+| | resposta final correta (com a verificação factual) | 100,0% |
+| | respostas montadas direto do prontuário | 1/21 |
+| | resultado liberado entre duas perguntas: modelo acerta de primeira | não |
+| | … resposta final correta | sim |
 | Fluxo do paciente (n=7) | sugestão da LLM aprovada | 7/7 |
 | | aprovada já na 1ª tentativa | 7/7 |
 | | fallback para as regras | 0/7 |
-| | latência mediana | 7,9 s |
+| | latência mediana | 7,1 s |
 <!-- /tabela:ponta_a_ponta -->
 
 <!-- analise:ponta_a_ponta -->
-Com o modelo ajustado servido pelo Ollama numa GPU de 8 GB (o GGUF q4_k_m ocupa 6,9 GB), os dois grafos rodam
-de verdade sobre as 20 primeiras perguntas de teste e os 7 pacientes de demonstração
-(`python -m src.avaliacao.avaliar_assistente --com-modelo`; respostas completas em
-`outputs/avaliacao/assistente_com_modelo.json` e o log em `outputs/avaliacao/auditoria_avaliacao.jsonl`).
+Com o modelo v2 servido pelo Ollama numa GPU de 8 GB (o GGUF q4_k_m ocupa 6,9 GB), os dois grafos rodam de
+verdade sobre as 20 primeiras perguntas de teste, 21 perguntas sobre os 7 pacientes de demonstração (pendências,
+valores críticos e um exame de cada) e o fluxo automatizado dos 7 pacientes
+(`python -m src.avaliacao.avaliar_assistente --com-modelo --modelo assistente-medico-v2`; respostas completas e
+log de auditoria em `outputs/avaliacao/`).
 
-- **No sistema completo a citação correta sobe para 90%**, contra 82,5% do modelo isolado: a busca real
-  entrega trechos ordenados por relevância, enquanto o teste do modelo usava distratores sorteados.
-- **Todas as 7 sugestões do fluxo do paciente foram aprovadas na primeira tentativa** — nenhuma precisou do
-  ciclo de correção nem do fallback para as regras.
-- **O caso do infarto (P-0002) mostra generalização além do defeito de treino**: o modelo cobriu os dois alertas
-  críticos (ECG com supra de ST e troponina) e sugeriu acionar a hemodinâmica citando o PROT-002 §4 — mesmo
-  tendo sido treinado com os 5 exemplos de ECG sem alerta (seção 11.5). Mas a mesma sugestão afirma que a
-  troponina de controle está "pendente além do horário previsto", quando está há 36 minutos de um prazo de 3
-  horas. **É uma imprecisão narrativa que nenhuma camada pega**: os alertas e as pendências corretos estão
-  no bloco calculado pelas regras logo acima da sugestão, e é por isso que o médico valida a sugestão olhando
-  para eles.
-- **Latência**: mediana de 2,0 s por pergunta e 7,9 s por paciente (a sugestão é mais longa). A primeira
+- **Fluxo do paciente: 7 de 7 sugestões aprovadas já na primeira tentativa**, sem fallback para as regras. No
+  infarto (P-0002), a sugestão cobre os dois alertas críticos (supra de ST e troponina) e manda acionar a
+  hemodinâmica citando o PROT-002 §4.
+- **Perguntas sobre paciente: o modelo acerta 85,7% de primeira; a resposta final acerta 100%.** A diferença é a
+  verificação factual: quando a resposta contradiz o prontuário, a nova tentativa recebe o que o prontuário
+  indica e, se o modelo insistir, a resposta é montada dos dados (aconteceu 1 vez em 21).
+- **O cenário do resultado liberado** — a hemocultura passa de pendente a positiva entre duas perguntas — é
+  justamente onde o modelo erra de primeira (diz "pendente": o dataset nunca teve hemocultura positiva, uma
+  lacuna de cobertura do gerador) e onde a verificação o corrige. Sem ela, o assistente teria respondido errado
+  sobre um valor crítico com o dado certo na frente.
+- **Perguntas sobre protocolo: 55% citam a fonte correta** — bem abaixo dos 92,5% do teste do Colab. A
+  diferença está nos **distratores**: no treino e no teste do Colab, os trechos que acompanham a seção certa
+  eram sorteados; no assistente, a busca traz as seções **vizinhas do mesmo protocolo**, parecidas com a pergunta,
+  e o modelo responde a partir da vizinha (perguntado "quando abrir o protocolo de sepse", responde com a
+  reavaliação do §5). Somam-se os 18% de perguntas em que a busca não recupera a seção certa (seção 6.3).
+  É a principal limitação do assistente, discutida na seção 11.3.
+- **Latência**: mediana de 2,2 s por pergunta e 7,1 s por paciente (a sugestão é mais longa). A primeira
   chamada depois de iniciar o Ollama leva ~70 s para carregar o modelo na GPU.
 <!-- /analise:ponta_a_ponta -->
 
@@ -588,9 +602,42 @@ demonstração e o cenário do resultado liberado entre duas perguntas.
 | Caso: cobre os alertas críticos | 100,0% | 100,0% |
 | Laudo: BI-RADS correto | 83,3% | 80,0% |
 | PubMedQA — acurácia | 0,750 | 0,755 |
+
+**No assistente completo, com as mesmas perguntas** (`avaliar_assistente --com-modelo`):
+
+| Verificação | v1 | v2 |
+|---|---:|---:|
+| Perguntas sobre protocolo: cita a fonte correta (n=20) | 55,0% | 55,0% |
+| Perguntas sobre paciente: o **modelo** lê o prontuário certo na 1ª tentativa (n=21) | 90,5% | 85,7% |
+| Perguntas sobre paciente: resposta final correta, com a verificação factual | 100,0% | 100,0% |
+| … respostas montadas direto do prontuário (modelo divergiu 2×) | 0 | 1 |
+| Resultado liberado entre duas perguntas: o modelo lê o novo resultado na 1ª tentativa | ❌ | ❌ |
+| … e a resposta final, com a verificação factual | ✅ | ✅ |
+| Fluxo do paciente: sugestão aprovada na 1ª tentativa (n=7) | 7/7 | 7/7 |
 <!-- /tabela:evolucao -->
 
 <!-- analise:evolucao -->
+**O que o v2 resolveu.** A tarefa nova funciona (86,7% lendo o prontuário certo, contra 56,7% do modelo
+base) e a cautela excessiva do v1 sumiu: a citação correta no teste do Colab subiu de 82,5% para 92,5%, e as
+abstenções indevidas caíram de 5 em 40 para 1 em 40.
+
+**O que o v2 piorou.** O ajuste foi além do ponto: com só 16 negativos "sem contexto" no treino, admitir que o
+contexto não responde caiu de 68% para 32%. A troca de 50% para 35% de negativos foi grande demais para um
+dataset desse tamanho — a lição é ajustar proporções em passos menores e medir.
+
+**No assistente completo, v1 e v2 empatam dentro do ruído.** Nas mesmas perguntas, a diferença é de 1 pergunta
+em 21 (90,5% × 85,7% de primeira) e ambos chegam a 100% com a verificação factual; a citação em perguntas de
+protocolo é igual (55%). Com amostras desse tamanho, a comparação de sistema não separa as versões.
+
+**Por que o v2 é o modelo final.** Ele foi treinado no dataset corrigido (sem o bug do supra de ST, com a ação
+de glicemia crítica certa e com o formato de pergunta sobre paciente que o assistente usa), cita a fonte certa
+com mais frequência no teste e não se abstém sem necessidade. O custo — abster-se menos quando deveria — é
+mitigado no sistema pela camada "sem base" e está registrado como a principal limitação do modelo.
+
+**O que a iteração ensinou** vale mais do que a diferença entre as versões: métricas altas no conjunto de teste
+não garantem o comportamento no sistema quando o formato da entrada em produção difere do treino. Nesta fase,
+isso aconteceu três vezes — o contexto do caso, a pergunta com prontuário e os distratores da busca —, e as
+três só apareceram rodando o sistema de verdade e lendo as respostas.
 <!-- /analise:evolucao -->
 
 **Uma lição sobre a rubrica.** A primeira versão da verificação das perguntas sobre pacientes comparava
@@ -782,16 +829,22 @@ perfeita.
   às cegas (base × ajustado) — o registro da validação humana no fluxo é desenhado para virar esse dado.
 - **A barreira de entrada é por regras**: barrou todos os pedidos indevidos do teste, mas um ataque
   paráfrase-a-paráfrase (*red teaming*) não foi feito. Por isso ela é uma camada entre quatro, e não a única.
-- **A busca erra em ~18% das perguntas** (recall@4 de 0,817). Quando erra, o modelo recebe um contexto sem a
-  resposta e, se aprendeu bem, diz que não há informação — o que é seguro, mas não útil. Melhorar a busca
-  (re-ranking por *cross-encoder*, perguntas sintéticas por seção no índice) é o próximo passo de maior
-  retorno.
-- **A barreira de saída prova que a citação não é inventada, não que é pertinente.** Um caso em 40: o modelo
-  respondeu outra pergunta a partir de um trecho distrator do contexto, citando-o corretamente — a barreira
-  aprovaria. Detectar isso exigiria comparar a pergunta com a seção citada (similaridade ou um segundo modelo
-  como juiz), o que não foi implementado.
-- **O modelo ficou cauteloso demais** (seção 6.2): em 12,5% das perguntas disse não haver informação quando
-  havia. É o erro do lado seguro, mas é a principal limitação de utilidade do modelo treinado.
+- **A principal limitação do assistente são as perguntas sobre protocolo: 55% citam a fonte correta no sistema
+  completo** (seção 6.4). Duas causas somadas: a busca não recupera a seção certa em 18% das perguntas
+  (recall@4 de 0,817), e o modelo foi treinado com distratores sorteados, mas em produção recebe as seções
+  vizinhas do mesmo protocolo e responde a partir delas. O próximo passo de maior retorno é treinar com os
+  **contextos que a própria busca devolve** (distratores difíceis) e melhorar a recuperação (re-ranking por
+  *cross-encoder*, perguntas sintéticas por seção no índice).
+- **A barreira de saída prova que a citação não é inventada, não que é pertinente.** Quando o modelo responde a
+  partir da seção vizinha e a cita corretamente, a barreira aprova. Detectar isso exigiria comparar a pergunta
+  com a seção citada (similaridade ou um segundo modelo como juiz), o que não foi implementado. A verificação
+  factual cobre esse problema só nas perguntas sobre o paciente, onde existe uma resposta calculável.
+- **O modelo final se abstém pouco quando deveria** (31,6% nas perguntas sem resposta no contexto, seção 6.2).
+  A camada "sem base" protege as perguntas fora do escopo, mas não as do domínio cujo trecho não foi
+  recuperado.
+- **Amostras pequenas.** As avaliações de ponta a ponta usam 20 perguntas de protocolo, 21 sobre pacientes e 7
+  fluxos; laudos e receitas tiveram 7 e 2 exemplos no teste do v2. Diferenças de um ou dois casos (como entre v1
+  e v2 no sistema) estão dentro do ruído.
 
 ### 11.4 Sobre o escopo clínico
 
@@ -805,11 +858,12 @@ Ao rodar o fluxo do paciente de ponta a ponta, o paciente com infarto (supra de 
 em vez de 2: a regra comparava "supradesnivelamento de **ST**" com o valor do exame convertido para
 minúsculas, e a comparação nunca era verdadeira. **Numa regra cujo único propósito é alertar, o infarto não
 alertava.** A correção é de uma linha, com teste dedicado (`tests/test_regras.py`) — mas o mesmo motor de
-regras gera os casos de treino, então **5 dos 1.488 exemplos de treino** (casos de dor torácica) ensinavam
-uma sugestão sem o alerta do ECG. O impacto no assistente é contido por desenho: o alerta vem da regra
-(corrigida), não do modelo; e, se a sugestão do modelo omitir um alerta crítico, a barreira de saída reprova,
-o grafo tenta de novo com a crítica e, persistindo, usa a sugestão das regras. A lição é a mesma da Fase 2:
-toda comparação de texto em regra de segurança precisa ser normalizada — e testada com o caso que importa.
+regras gera os casos de treino, então **5 dos 1.488 exemplos de treino do v1** (casos de dor torácica)
+ensinavam uma sugestão sem o alerta do ECG; o v2 foi treinado com o dataset corrigido. Mesmo no v1, o impacto
+no assistente era contido por desenho: o alerta vem da regra (corrigida), não do modelo; e, se a sugestão do
+modelo omitir um alerta crítico, a barreira de saída reprova, o grafo tenta de novo com a crítica e,
+persistindo, usa a sugestão das regras. A lição é a mesma da Fase 2: toda comparação de texto em regra de
+segurança precisa ser normalizada — e testada com o caso que importa.
 
 ---
 
@@ -824,22 +878,30 @@ que verifica exames pendentes, emite alertas e sugere conduta, e o de perguntas 
 segurança com limites de atuação em quatro camadas, log de auditoria e fonte verificada em cada resposta.
 
 O que os números mostram é que o fine-tuning fez o que se pede dele: ensinou **comportamento**. Recusar
-prescrição (70% → 100%), seguir os modelos da casa (0% → 100% nos laudos), marcar sugestão como rascunho
-(37% → 100%) e admitir quando o contexto não responde (5% → 68%) são coisas que o modelo original não tinha
-como saber. O conhecimento dos protocolos ficou onde deve: na busca, que cita a fonte e se atualiza sem
-retreino.
+prescrição (62,5% → 100%, inclusive em redações nunca vistas), seguir os modelos da casa (0% → 100% nos laudos),
+marcar sugestão como rascunho (13% → 100%) e ler o prontuário numa pergunta sobre o paciente (57% → 87%) são
+coisas que o modelo original não tinha como saber. O conhecimento dos protocolos ficou onde deve: na busca, que
+cita a fonte e se atualiza sem retreino.
 
-Três decisões de engenharia sustentam a segurança mais do que o modelo: **as regras decidem, a LLM redige**
-(alerta não depende de geração de texto); **o grafo chama as ferramentas, não o modelo** (não há como uma
+Foram necessárias duas versões. O v1 tinha métricas altas no teste e falhou na demonstração por **descompasso
+entre o formato do treino e o da inferência** — o contexto do caso e a pergunta com prontuário. O v2 corrigiu
+os dois e trouxe a lição mais útil da fase: métrica no conjunto de teste não substitui rodar o sistema e ler as
+respostas. A terceira ocorrência do mesmo problema — distratores sorteados no treino contra seções vizinhas na
+busca real — é a principal limitação que fica.
+
+Quatro decisões de engenharia sustentam a segurança mais do que o modelo: **as regras decidem, a LLM redige**
+(alerta não depende de geração de texto, e as falhas do modelo em comparar números com limites mostram por quê);
+**a resposta sobre o paciente é verificada contra o prontuário** (o modelo errou de primeira o resultado
+recém-liberado, e a resposta final saiu certa); **o grafo chama as ferramentas, não o modelo** (não há como uma
 instrução maliciosa fazer o assistente consultar ou alterar o que não deve); e **nenhuma conduta sem um médico
 identificado** (o `interrupt` do LangGraph torna a validação humana parte do fluxo, não uma recomendação).
 
-As limitações estão medidas, não escondidas: o modelo ajustado ficou cauteloso demais (12,5% de abstenções
-desnecessárias, o que derrubou a citação correta de 95% para 82,5%), a busca erra 18% das vezes, a barreira
-de saída não detecta resposta baseada no trecho errado do contexto, e um bug de comparação de texto deixou o
-infarto sem alerta até ser pego pelo teste de ponta a ponta. O próximo passo de maior retorno é melhorar a
-recuperação (re-ranking) e rebalancear o treino com mais exemplos de resposta presente entre distratores
-parecidos — e, antes de qualquer uso real, a avaliação por médicos que a rubrica automática não substitui.
+As limitações estão medidas, não escondidas: no sistema completo, só 55% das perguntas sobre protocolo citam a
+fonte correta; o modelo final se abstém pouco quando o contexto não responde (32%); a busca erra 18% das vezes;
+a barreira de saída não detecta resposta baseada na seção vizinha; e um bug de comparação de texto deixou o
+infarto sem alerta até ser pego pelo teste de ponta a ponta. O próximo passo de maior retorno é treinar com os
+contextos que a própria busca devolve e melhorar a recuperação (re-ranking) — e, antes de qualquer uso real, a
+avaliação por médicos que a rubrica automática não substitui.
 
 O princípio das três fases continua o mesmo: o sistema apoia, o médico decide.
 <!-- /analise:conclusao -->

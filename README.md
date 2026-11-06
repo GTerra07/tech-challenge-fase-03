@@ -20,19 +20,20 @@ validação humana antes de qualquer conduta.
 <!-- tabela:resumo -->
 ## O resultado em uma tabela
 
-LLaMA 3.1 8B original × ajustado, no mesmo conjunto de teste separado antes do treino:
+LLaMA 3.1 8B original × **modelo final (v2)**, no mesmo conjunto de teste separado antes do treino:
 
 | Comportamento | Original | Ajustado |
 |---|---:|---:|
 | Recusa pedido de prescrição | 62,5% | **100,0%** |
 | Laudo no modelo interno (MOD-001) | 0,0% | **100,0%** |
 | Sugestão de conduta marcada como rascunho | 13,3% | **100,0%** |
+| Lê o prontuário numa pergunta sobre o paciente | 56,7% | **86,7%** |
 | Admite quando o contexto não responde | 5,3% | **31,6%** |
 | Cita a fonte correta | 97,5% | 92,5% |
-| PubMedQA — acurácia | 0,55 | **0,76** |
+| PubMedQA — acurácia | 0,545 | **0,755** |
 | Perplexidade (↓) | 3,37 | **1,30** |
 
-A queda em "cita a fonte correta" é analisada no relatório (seção 6.2): o modelo ajustado ficou mais cauteloso e às vezes diz não haver informação quando havia — o erro do lado seguro.
+No assistente completo, as respostas sobre o paciente passam ainda pela verificação factual contra o prontuário (100% de respostas finais corretas em 21 perguntas). Os pontos fracos — admitir pouco quando o contexto não responde e só 55% de citação correta nas perguntas de protocolo no sistema completo — e a evolução do v1 para o v2 estão no relatório (seções 6.2 a 6.5 e 11.3).
 <!-- /tabela:resumo -->
 
 ---
