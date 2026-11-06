@@ -1,0 +1,29 @@
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	receber_paciente(receber_paciente)
+	verificar_exames_pendentes(verificar_exames_pendentes)
+	emitir_alertas(emitir_alertas)
+	buscar_protocolos(buscar_protocolos)
+	sugerir_tratamento(sugerir_tratamento)
+	verificar_seguranca(verificar_seguranca)
+	sugestao_por_regras(sugestao_por_regras)
+	validacao_humana(validacao_humana)
+	registrar_desfecho(registrar_desfecho)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> receber_paciente;
+	buscar_protocolos --> sugerir_tratamento;
+	emitir_alertas --> buscar_protocolos;
+	receber_paciente -. &nbsp;fim&nbsp; .-> __end__;
+	receber_paciente -. &nbsp;seguir&nbsp; .-> verificar_exames_pendentes;
+	sugerir_tratamento --> verificar_seguranca;
+	sugestao_por_regras --> validacao_humana;
+	validacao_humana --> registrar_desfecho;
+	verificar_exames_pendentes -. &nbsp;sem_alertas&nbsp; .-> buscar_protocolos;
+	verificar_exames_pendentes -. &nbsp;alertar&nbsp; .-> emitir_alertas;
+	verificar_seguranca -. &nbsp;tentar_de_novo&nbsp; .-> sugerir_tratamento;
+	verificar_seguranca -. &nbsp;usar_regras&nbsp; .-> sugestao_por_regras;
+	verificar_seguranca -. &nbsp;aprovada&nbsp; .-> validacao_humana;
+	registrar_desfecho --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc
