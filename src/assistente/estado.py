@@ -43,5 +43,6 @@ class EstadoPergunta(TypedDict, total=False):
     confianca: float
     resposta: str
     verificacao: dict
+    resposta_prontuario: str    # resposta montada das regras quando o modelo diverge
     tentativas: int
     trilha: Annotated[list[str], operator.add]

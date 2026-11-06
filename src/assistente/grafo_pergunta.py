@@ -28,6 +28,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import RetryPolicy
 
+from src.assistente import checagem_factual
 from src.assistente.estado import EstadoPergunta
 from src.assistente.llm import Redator
 from src.dados.conhecimento_interno import RESPOSTA_RECUSA, RESPOSTA_SEM_CONTEXTO
@@ -119,10 +120,29 @@ def criar_grafo_pergunta(redator: Redator, busca: BuscaProtocolos, auditoria: Au
     def verificar_resposta(e: EstadoPergunta) -> dict:
         fontes_doc = {f for f in e["fontes_contexto"] if not f.startswith(FONTE_PRONTUARIO)}
         v = verificar_saida(e["resposta"], fontes_doc)
-        verificacao = {"aprovada": v.aprovada, "problemas": v.problemas, "fontes_citadas": v.fontes_citadas}
+        problemas = list(v.problemas)
+        esperado = ""
+        # Pergunta sobre o paciente: o que a resposta afirma bate com o prontuario?
+        if e.get("dados_paciente"):
+            c = checagem_factual.checar(e["pergunta"], e["resposta"],
+                                        ferramentas.carregar_para_regras(e["paciente_id"]))
+            if c.aplicavel and not c.coerente:
+                problemas.append(c.problema)
+                esperado = c.esperado
+        verificacao = {"aprovada": not problemas, "problemas": problemas, "fontes_citadas": v.fontes_citadas,
+                       "diverge_do_prontuario": bool(esperado)}
         aud.registrar("verificacao_saida", e["execucao"], **verificacao)
-        return {"verificacao": verificacao,
-                "trilha": [f"verificar_resposta: {'aprovada' if v.aprovada else 'REPROVADA — ' + '; '.join(v.problemas)}"]}
+        return {"verificacao": verificacao, "resposta_prontuario": esperado,
+                "trilha": [f"verificar_resposta: {'aprovada' if not problemas else 'REPROVADA — ' + '; '.join(problemas)}"]}
+
+    @auditado
+    def responder_pelo_prontuario(e: EstadoPergunta) -> dict:
+        """Divergencia persistente: a resposta sai dos dados, e isso fica explicito."""
+        resposta = (e["resposta_prontuario"] + "\n\n(Resposta montada diretamente a partir do prontuário: a redação "
+                    "do modelo divergiu dos dados em duas tentativas.)")
+        aud.registrar("fallback_prontuario", e["execucao"], paciente_id=e["paciente_id"])
+        return {"resposta": resposta,
+                "trilha": ["responder_pelo_prontuario: modelo divergiu 2x do prontuário; resposta montada dos dados"]}
 
     @auditado
     def anotar_ressalva(e: EstadoPergunta) -> dict:
@@ -143,7 +163,9 @@ def criar_grafo_pergunta(redator: Redator, busca: BuscaProtocolos, auditoria: Au
     def depois_da_verificacao(e):
         if e["verificacao"]["aprovada"]:
             return "ok"
-        return "tentar_de_novo" if e["tentativas"] < 2 else "ressalva"
+        if e["tentativas"] < 2:
+            return "tentar_de_novo"
+        return "prontuario" if e["verificacao"].get("diverge_do_prontuario") else "ressalva"
 
     g = StateGraph(EstadoPergunta)
     g.add_node("triagem_entrada", triagem_entrada)
@@ -155,6 +177,7 @@ def criar_grafo_pergunta(redator: Redator, busca: BuscaProtocolos, auditoria: Au
     g.add_node("responder", responder, retry_policy=RetryPolicy(max_attempts=3, initial_interval=1.0))
     g.add_node("verificar_resposta", verificar_resposta)
     g.add_node("anotar_ressalva", anotar_ressalva)
+    g.add_node("responder_pelo_prontuario", responder_pelo_prontuario)
 
     g.add_edge(START, "triagem_entrada")
     g.add_conditional_edges("triagem_entrada", depois_da_triagem,
@@ -167,6 +190,8 @@ def criar_grafo_pergunta(redator: Redator, busca: BuscaProtocolos, auditoria: Au
     g.add_edge("sem_base", END)
     g.add_edge("responder", "verificar_resposta")
     g.add_conditional_edges("verificar_resposta", depois_da_verificacao,
-                            {"ok": END, "tentar_de_novo": "responder", "ressalva": "anotar_ressalva"})
+                            {"ok": END, "tentar_de_novo": "responder", "ressalva": "anotar_ressalva",
+                             "prontuario": "responder_pelo_prontuario"})
+    g.add_edge("responder_pelo_prontuario", END)
     g.add_edge("anotar_ressalva", END)
     return g.compile(checkpointer=checkpointer or InMemorySaver())

@@ -344,6 +344,7 @@ graph TD;
 	responder(responder)
 	verificar_resposta(verificar_resposta)
 	anotar_ressalva(anotar_ressalva)
+	responder_pelo_prontuario(responder_pelo_prontuario)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> triagem_entrada;
 	buscar_protocolos -.-> responder;
@@ -357,8 +358,10 @@ graph TD;
 	verificar_resposta -. &nbsp;ok&nbsp; .-> __end__;
 	verificar_resposta -. &nbsp;ressalva&nbsp; .-> anotar_ressalva;
 	verificar_resposta -. &nbsp;tentar_de_novo&nbsp; .-> responder;
+	verificar_resposta -. &nbsp;prontuario&nbsp; .-> responder_pelo_prontuario;
 	anotar_ressalva --> __end__;
 	recusar --> __end__;
+	responder_pelo_prontuario --> __end__;
 	sem_base --> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2
 	classDef first fill-opacity:0
@@ -610,7 +613,7 @@ confiável, então são quatro:
 |---|---|---|
 | 1. Triagem de entrada | Regras barram pedido de prescrição, dose, suspensão, alta e *prompt injection* **antes do modelo**; resposta padrão citando o PROT-008 | `tests/test_limites.py`; avaliação 6.3 |
 | 2. Modelo ajustado | Aprendeu a recusar, inclusive redações nunca vistas | avaliação 6.2, tarefa "pedido de prescrição" |
-| 3. Barreira de saída | Reprova resposta com dose, sugestão sem marca de rascunho, sem fonte, com fonte não recuperada ou que omite alerta crítico; o grafo tenta de novo e, persistindo, usa a sugestão das regras | `tests/test_grafos.py` |
+| 3. Barreira de saída | Reprova resposta com dose, sugestão sem marca de rascunho, sem fonte, com fonte não recuperada, que omite alerta crítico ou **que contradiz o prontuário**; o grafo tenta de novo com a crítica e, persistindo, usa a sugestão das regras ou a resposta montada do prontuário | `tests/test_grafos.py` |
 | 4. Validação humana | `interrupt()` do LangGraph: o fluxo pausa e só continua com a decisão (aprovada, ajustada ou rejeitada) **e** a identificação do médico | `test_validacao_humana_exige_medico_identificado` |
 
 As normas do próprio assistente estão escritas como protocolo (PROT-008 §3: o que pode e o que não pode),
