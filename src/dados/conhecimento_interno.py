@@ -324,7 +324,8 @@ RX_CORACAO = [("área cardíaca normal", None), ("área cardíaca aumentada", "C
 
 US_NODULOS = [
     ("oval", "circunscritas", "paralela", "3", "controle de imagem em 6 meses"),
-    ("oval", "circunscritas", "paralela", "2", "seguimento de rotina"),
+    ("oval, anecoica, com reforço acústico posterior (cisto simples)", "circunscritas", "paralela", "2",
+     "seguimento de rotina"),
     ("irregular", "microlobuladas", "paralela", "4B", "biópsia percutânea guiada por imagem em até 15 dias"),
     ("irregular", "indistintas", "não paralela", "4C", "biópsia percutânea guiada por imagem em até 15 dias"),
     ("irregular", "espiculadas", "não paralela", "5", "biópsia percutânea guiada por imagem em até 15 dias"),

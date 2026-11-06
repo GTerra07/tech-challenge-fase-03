@@ -161,7 +161,7 @@ def alertas(paciente: dict) -> list[Achado]:
 # E o alvo dos casos de treino: o modelo aprende a sugerir isto, sempre como
 # rascunho e sem medicamento nem dose (PROT-008 §3).
 ACOES: dict[tuple[str, str], str] = {
-    ("pendencia", "hemocultura"): "Coletar as duas hemoculturas antes do antimicrobiano (POP-001), sem atrasar o antimicrobiano mais de 45 minutos (PROT-001 §3).",
+    ("pendencia", "hemocultura"): "Coletar as duas hemoculturas antes do antimicrobiano (POP-001 §2), sem atrasar o antimicrobiano mais de 45 minutos (PROT-001 §3).",
     ("pendencia", "lactato"): "Coletar o lactato, item do pacote da primeira hora (PROT-001 §3).",
     ("pendencia", "hemograma"): "Liberar a coleta do hemograma; na profilaxia de TEV, plaquetas pendentes impedem a profilaxia farmacológica (PROT-006 §3).",
     ("pendencia", "creatinina"): "Coletar creatinina conforme o protocolo ativo (PROT-001 §4 / PROT-005 §5).",
@@ -193,6 +193,31 @@ ACOES: dict[tuple[str, str], str] = {
 def acao_sugerida(achado: Achado) -> str:
     return ACOES.get((achado.tipo, achado.exame),
                      f"Avaliar {achado.exame} conforme o protocolo ({achado.fonte}).")
+
+
+# Secoes sempre presentes no contexto de um caso: o limite de atuacao do
+# assistente e, havendo alerta critico, o prazo e o registro da comunicacao.
+FONTES_FIXAS = ("PROT-008 §3",)
+FONTES_SE_CRITICO = ("PROT-007 §3", "PROT-007 §4")
+
+
+def fontes_para_contexto(paciente: dict) -> list[str]:
+    """
+    Toda secao que a sugestao de referencia pode citar para este paciente.
+
+    Definida aqui, uma vez, e usada pelo dataset de treino e pelo grafo: a
+    sugestao so pode citar o que estava no contexto (explainability verificavel),
+    entao o contexto tem que conter as secoes das acoes, e nao so as dos alertas.
+    """
+    from src.avaliacao.metricas import fontes_citadas
+
+    alertas_ = alertas(paciente)
+    fontes = {a.fonte for a in alertas_} | set(FONTES_FIXAS)
+    for a in alertas_:
+        fontes |= fontes_citadas(acao_sugerida(a))
+    if any(a.nivel == CRITICO for a in alertas_):
+        fontes |= set(FONTES_SE_CRITICO)
+    return sorted(fontes)
 
 
 def _ordenar(achados: list[Achado]) -> list[Achado]:
