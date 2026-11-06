@@ -112,11 +112,17 @@ métricas de avaliação e o modelo em **GGUF** com o `Modelfile`.
 
 ### 4. Servir o modelo ajustado no Ollama
 
-Baixe do Drive `assistente-medico.Q4_K_M.gguf` e `Modelfile` para a pasta `modelo/` e:
+Baixe do Drive `assistente-medico.Q4_K_M.gguf` (4,9 GB, gerado pelo notebook) para a pasta `modelo/` —
+o `Modelfile` já está versionado ali, com o mesmo template Alpaca do treino — e:
 
 ```bash
-ollama create assistente-medico -f modelo/Modelfile
+cd modelo
+ollama create assistente-medico -f Modelfile
 ```
+
+O modelo quantizado em 4 bits ocupa ~6,9 GB de memória de GPU e roda numa placa de 8 GB. Se a sessão do
+Colab acabar entre o salvamento do adaptador e a exportação, `notebooks/01b_exportar_gguf_colab.ipynb`
+exporta a partir do adaptador salvo no Drive, sem retreinar.
 
 ### 5. Assistente
 
