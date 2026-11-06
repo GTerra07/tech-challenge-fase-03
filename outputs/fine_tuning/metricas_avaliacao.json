@@ -1,8 +1,8 @@
 {
   "base": {
     "pubmedqa": {
-      "acuracia": 0.55,
-      "f1_macro": 0.2373247033441208,
+      "acuracia": 0.545,
+      "f1_macro": 0.23516720604099248,
       "invalidos": 0,
       "n": 200,
       "distribuicao_prevista": {
@@ -12,100 +12,111 @@
     },
     "similaridade": {
       "medquad": {
-        "rouge_l": 0.1755020483056034,
-        "bleu": 6.333244250672426,
+        "rouge_l": 0.17298723291256515,
+        "bleu": 6.323504846312142,
         "n": 50
       },
       "pergunta": {
-        "rouge_l": 0.34668697615657873,
-        "bleu": 14.611280912398882,
+        "rouge_l": 0.3493170995110295,
+        "bleu": 15.57202225777541,
         "n": 40
       },
       "sem_contexto": {
-        "rouge_l": 0.1644570571862474,
-        "bleu": 0.5682829320664375,
-        "n": 22
+        "rouge_l": 0.1657597046070951,
+        "bleu": 0.6682103392813902,
+        "n": 19
       },
       "recusa": {
-        "rouge_l": 0.23895479089191513,
-        "bleu": 7.274105228776617,
+        "rouge_l": 0.24459640900550816,
+        "bleu": 7.551602990891851,
         "n": 40
       },
       "caso": {
-        "rouge_l": 0.26689216060685644,
-        "bleu": 5.163728971992173,
+        "rouge_l": 0.27391456554600013,
+        "bleu": 6.572559282340954,
+        "n": 30
+      },
+      "pergunta_paciente": {
+        "rouge_l": 0.19530642610100254,
+        "bleu": 5.588760431126873,
         "n": 30
       },
       "laudo": {
-        "rouge_l": 0.35779098555562344,
-        "bleu": 7.058516772371158,
-        "n": 15
+        "rouge_l": 0.3383508133374656,
+        "bleu": 7.5706154183868435,
+        "n": 7
       },
       "receita": {
-        "rouge_l": 0.420538178898032,
-        "bleu": 12.278700663319322,
-        "n": 6
+        "rouge_l": 0.47887920298879205,
+        "bleu": 14.171295486265624,
+        "n": 2
       }
     },
     "comportamento": {
       "pergunta": {
-        "cita_fonte_correta": 0.95,
+        "cita_fonte_correta": 0.975,
         "sem_dose": 1.0,
         "n": 40
       },
       "sem_contexto": {
-        "admite_sem_contexto": 0.045454545454545456,
-        "n": 22
+        "admite_sem_contexto": 0.05263157894736842,
+        "n": 19
       },
       "recusa": {
-        "recusou": 0.7,
+        "recusou": 0.625,
         "sem_dose": 1.0,
         "n": 40
       },
       "caso": {
         "cobertura_alertas_criticos": 1.0,
-        "marca_rascunho": 0.36666666666666664,
+        "marca_rascunho": 0.13333333333333333,
         "sem_dose": 1.0,
+        "n": 30
+      },
+      "pergunta_paciente": {
+        "situacao_correta": 0.5666666666666667,
+        "sem_dose": 1.0,
+        "cobre_itens_do_prontuario": 1.0,
         "n": 30
       },
       "laudo": {
         "estrutura_mod001": 0.0,
         "birads_correto": 0.0,
-        "n": 15
+        "n": 7
       },
       "receita": {
         "preserva_itens": 1.0,
-        "marca_rascunho": 0.3333333333333333,
-        "n": 6
+        "marca_rascunho": 0.5,
+        "n": 2
       }
     }
   },
   "ajustado": {
     "pubmedqa": {
-      "acuracia": 0.75,
-      "f1_macro": 0.5247833824430376,
+      "acuracia": 0.755,
+      "f1_macro": 0.5281339031339032,
       "invalidos": 0,
       "n": 200,
       "distribuicao_prevista": {
-        "yes": 117,
-        "no": 83
+        "yes": 124,
+        "no": 76
       }
     },
     "similaridade": {
       "medquad": {
-        "rouge_l": 0.3046953350413945,
-        "bleu": 16.50529392423054,
+        "rouge_l": 0.348847814945466,
+        "bleu": 23.39236496808135,
         "n": 50
       },
       "pergunta": {
-        "rouge_l": 0.6680514211540414,
-        "bleu": 55.09647849722244,
+        "rouge_l": 0.6979733174953957,
+        "bleu": 60.35779154325248,
         "n": 40
       },
       "sem_contexto": {
-        "rouge_l": 0.7287432027955153,
-        "bleu": 56.547875400415606,
-        "n": 22
+        "rouge_l": 0.39106869527068755,
+        "bleu": 22.627561054517027,
+        "n": 19
       },
       "recusa": {
         "rouge_l": 1.0,
@@ -113,30 +124,35 @@
         "n": 40
       },
       "caso": {
-        "rouge_l": 0.9821320365239027,
-        "bleu": 96.87764226002498,
+        "rouge_l": 0.9654527853175028,
+        "bleu": 94.96608781222572,
+        "n": 30
+      },
+      "pergunta_paciente": {
+        "rouge_l": 0.8760530051667706,
+        "bleu": 80.1945882302652,
         "n": 30
       },
       "laudo": {
-        "rouge_l": 0.9483068001452435,
-        "bleu": 93.05680706149839,
-        "n": 15
+        "rouge_l": 0.9784364696336528,
+        "bleu": 96.36459143155045,
+        "n": 7
       },
       "receita": {
         "rouge_l": 1.0,
         "bleu": 100.00000000000004,
-        "n": 6
+        "n": 2
       }
     },
     "comportamento": {
       "pergunta": {
-        "cita_fonte_correta": 0.825,
+        "cita_fonte_correta": 0.925,
         "sem_dose": 1.0,
         "n": 40
       },
       "sem_contexto": {
-        "admite_sem_contexto": 0.6818181818181818,
-        "n": 22
+        "admite_sem_contexto": 0.3157894736842105,
+        "n": 19
       },
       "recusa": {
         "recusou": 1.0,
@@ -149,31 +165,39 @@
         "sem_dose": 1.0,
         "n": 30
       },
+      "pergunta_paciente": {
+        "situacao_correta": 0.8666666666666667,
+        "sem_dose": 1.0,
+        "cobre_itens_do_prontuario": 1.0,
+        "n": 30
+      },
       "laudo": {
         "estrutura_mod001": 1.0,
-        "birads_correto": 0.8333333333333334,
-        "n": 15
+        "birads_correto": 0.8,
+        "n": 7
       },
       "receita": {
         "preserva_itens": 1.0,
         "marca_rascunho": 1.0,
-        "n": 6
+        "n": 2
       }
     }
   },
   "perplexidade": {
-    "ajustado": 2.059234256819067,
-    "base": 3.8764090780912017
+    "ajustado": 1.2969596516081732,
+    "base": 3.3717699524019755
   },
   "modelo_base": "unsloth/Llama-3.1-8B-Instruct",
   "amostra": {
     "pubmedqa": 200,
     "medquad": 50,
     "pergunta": 40,
-    "sem_contexto": 22,
+    "sem_contexto": 19,
     "recusa": 40,
     "caso": 30,
-    "laudo": 15,
-    "receita": 6
-  }
+    "pergunta_paciente": 30,
+    "laudo": 7,
+    "receita": 2
+  },
+  "rescorado": "verificações recalculadas localmente com src/avaliacao/rescorar.py (rubrica atual)"
 }

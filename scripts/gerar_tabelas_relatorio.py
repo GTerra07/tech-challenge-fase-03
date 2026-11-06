@@ -142,6 +142,48 @@ def tabela_ponta_a_ponta():
     ])
 
 
+def tabela_evolucao():
+    """v1 x v2: cada um contra o base no proprio teste (Colab) e os dois nas mesmas perguntas (ponta a ponta)."""
+    v1, v2 = _ler("fine_tuning_v1/metricas_avaliacao.json"), _ler("fine_tuning/metricas_avaliacao.json")
+    e1 = _ler("avaliacao/assistente_com_modelo_assistente-medico-v1.json")
+    e2 = _ler("avaliacao/assistente_com_modelo_assistente-medico-v2.json")
+    if not (v1 and v2):
+        return "_(aguardando os resultados do v1 e do v2)_"
+
+    def c(m, t, k):
+        v = m["ajustado"]["comportamento"].get(t, {}).get(k)
+        return "—" if v is None else _pct(v)
+
+    linhas = ["**No conjunto de teste de cada versão** (Colab; cada uma contra o modelo base do seu teste):", "",
+              "| Verificação | v1 | v2 |", "|---|---:|---:|"]
+    for nome, t, k in [("Cita a fonte correta", "pergunta", "cita_fonte_correta"),
+                       ("Admite que o contexto não responde", "sem_contexto", "admite_sem_contexto"),
+                       ("Recusa pedido de prescrição", "recusa", "recusou"),
+                       ("Pergunta sobre paciente: lê o prontuário certo", "pergunta_paciente", "situacao_correta"),
+                       ("Caso: cobre os alertas críticos", "caso", "cobertura_alertas_criticos"),
+                       ("Laudo: BI-RADS correto", "laudo", "birads_correto")]:
+        linhas.append(f"| {nome} | {c(v1, t, k)} | {c(v2, t, k)} |")
+    linhas.append(f"| PubMedQA — acurácia | {_n(v1['ajustado']['pubmedqa']['acuracia'], 3)} | "
+                  f"{_n(v2['ajustado']['pubmedqa']['acuracia'], 3)} |")
+    if e1 and e2:
+        p1, p2 = e1["ponta_a_ponta"], e2["ponta_a_ponta"]
+        sim = lambda b: "✅" if b else "❌"  # noqa: E731
+        linhas += ["", "**No assistente completo, com as mesmas perguntas** (`avaliar_assistente --com-modelo`):", "",
+                   "| Verificação | v1 | v2 |", "|---|---:|---:|",
+                   f"| Perguntas sobre protocolo: cita a fonte correta (n={p1['perguntas']['n']}) | "
+                   f"{_pct(p1['perguntas']['cita_fonte_correta'])} | {_pct(p2['perguntas']['cita_fonte_correta'])} |",
+                   f"| Perguntas sobre paciente: lê o prontuário certo (n={p1['perguntas_paciente']['n']}) | "
+                   f"{_pct(p1['perguntas_paciente']['situacao_correta'])} | "
+                   f"{_pct(p2['perguntas_paciente']['situacao_correta'])} |",
+                   f"| Resultado liberado entre duas perguntas: lê o novo resultado | "
+                   f"{sim(p1['perguntas_paciente']['resultado_liberado_depois_correto'])} | "
+                   f"{sim(p2['perguntas_paciente']['resultado_liberado_depois_correto'])} |",
+                   f"| Fluxo do paciente: sugestão aprovada na 1ª tentativa (n={p1['fluxo_paciente']['n']}) | "
+                   f"{p1['fluxo_paciente']['aprovada_na_1a_tentativa']}/{p1['fluxo_paciente']['n']} | "
+                   f"{p2['fluxo_paciente']['aprovada_na_1a_tentativa']}/{p2['fluxo_paciente']['n']} |"]
+    return "\n".join(linhas)
+
+
 def tabela_resumo():
     """Resumo para o README: o que o fine-tuning mudou, em uma tabela."""
     m = _ler("fine_tuning/metricas_avaliacao.json")
@@ -169,7 +211,7 @@ def tabela_resumo():
     return "\n".join(linhas)
 
 
-TABELAS = {"resumo": tabela_resumo, "curadoria": tabela_curadoria, "treino": tabela_treino, "modelo": tabela_modelo,
+TABELAS = {"resumo": tabela_resumo, "evolucao": tabela_evolucao, "curadoria": tabela_curadoria, "treino": tabela_treino, "modelo": tabela_modelo,
            "sistema": tabela_sistema, "ponta_a_ponta": tabela_ponta_a_ponta}
 
 

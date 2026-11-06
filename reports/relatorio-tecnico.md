@@ -103,19 +103,19 @@ pacientes gerados aleatoriamente.
 <!-- tabela:curadoria -->
 | Etapa | interno | pubmedqa | medquad |
 |---|---:|---:|---:|
-| Entrada | 872 | 1000 | 632 |
-| Removidos: duplicata (mesma entrada) | 46 | 0 | 0 |
+| Entrada | 1141 | 1000 | 632 |
 | Removidos: acima do contexto de treino | 2 | 0 | 0 |
+| Removidos: duplicata (mesma entrada) | 44 | 0 | 0 |
 | Removidos: marcação residual | 0 | 3 | 0 |
-| **Aprovados** | **824** | **997** | **632** |
+| **Aprovados** | **1095** | **997** | **632** |
 
 **Divisão**
 
 | Conjunto | Total | interno | pubmedqa | medquad |
 |---|---:|---:|---:|---:|
-| treino | 1488 | 587 | 501 | 400 |
-| validacao | 126 | 26 | 50 | 50 |
-| teste | 511 | 211 | 200 | 100 |
+| treino | 1732 | 831 | 501 | 400 |
+| validacao | 150 | 50 | 50 | 50 |
+| teste | 514 | 214 | 200 | 100 |
 
 **Tarefas no treino**
 
@@ -123,12 +123,13 @@ pacientes gerados aleatoriamente.
 |---|---:|
 | pubmedqa | 501 |
 | medquad | 400 |
-| caso | 212 |
-| pergunta | 174 |
-| recusa | 93 |
-| laudo | 64 |
-| sem_contexto | 25 |
-| receita | 19 |
+| pergunta_paciente | 230 |
+| caso | 228 |
+| pergunta | 177 |
+| recusa | 89 |
+| laudo | 69 |
+| receita | 22 |
+| sem_contexto | 16 |
 <!-- /tabela:curadoria -->
 
 Decisões de curadoria que valem registro:
@@ -207,12 +208,12 @@ avalia e exporta o modelo em **GGUF q4_k_m** para o Ollama.
 |---|---|
 | Modelo base | `unsloth/Llama-3.1-8B-Instruct` (4 bits) |
 | GPU | Tesla T4 |
-| Exemplos de treino / validação | 1488 / 126 |
-| Passos (1 época, batch efetivo 8) | 186 |
-| Tempo de treino | 41,0 min |
-| Perda de treino: primeiro registro → último | 1,965 → 0,634 |
-| Perda de validação: primeira → última | 0,954 → 0,853 |
-| Perda média de treino da época | 0,760 |
+| Exemplos de treino / validação | 1732 / 150 |
+| Passos (1 época, batch efetivo 8) | 217 |
+| Tempo de treino | 60,0 min |
+| Perda de treino: primeiro registro → último | 1,876 → 0,480 |
+| Perda de validação: primeira → última | 0,831 → 0,689 |
+| Perda média de treino da época | 0,604 |
 <!-- /tabela:treino -->
 
 ![Curva de perda](../outputs/fine_tuning/curva_perda.png)
@@ -396,40 +397,45 @@ conclusão errada com aparência de medição).
 <!-- tabela:modelo -->
 | Métrica | LLaMA 3.1 8B base | Ajustado | Variação |
 |---|---:|---:|---:|
-| Perplexidade nas respostas de referência (↓) | 3,88 | 2,06 | -46,9% |
-| PubMedQA — acurácia (n=200) | 0,550 | 0,750 | 0,200 |
-| PubMedQA — F1 macro | 0,237 | 0,525 | 0,287 |
-| MedQuAD — ROUGE-L (n=50) | 0,176 | 0,305 | 0,129 |
-| Pergunta sobre protocolo — ROUGE-L (n=40) | 0,347 | 0,668 | 0,321 |
-| Pergunta sem resposta no contexto — ROUGE-L (n=22) | 0,164 | 0,729 | 0,564 |
-| Pedido de prescrição (25 de 40 com redação inédita) — ROUGE-L (n=40) | 0,239 | 1,000 | 0,761 |
-| Caso de paciente — ROUGE-L (n=30) | 0,267 | 0,982 | 0,715 |
-| Laudo — ROUGE-L (n=15) | 0,358 | 0,948 | 0,591 |
-| Receita — ROUGE-L (n=6) | 0,421 | 1,000 | 0,579 |
-| MedQuAD — BLEU | 6,3 | 16,5 | 10,2 |
-| Pergunta sobre protocolo — BLEU | 14,6 | 55,1 | 40,5 |
-| Pergunta sem resposta no contexto — BLEU | 0,6 | 56,5 | 56,0 |
-| Pedido de prescrição (25 de 40 com redação inédita) — BLEU | 7,3 | 100,0 | 92,7 |
-| Caso de paciente — BLEU | 5,2 | 96,9 | 91,7 |
-| Laudo — BLEU | 7,1 | 93,1 | 86,0 |
-| Receita — BLEU | 12,3 | 100,0 | 87,7 |
+| Perplexidade nas respostas de referência (↓) | 3,37 | 1,30 | -61,5% |
+| PubMedQA — acurácia (n=200) | 0,545 | 0,755 | 0,210 |
+| PubMedQA — F1 macro | 0,235 | 0,528 | 0,293 |
+| MedQuAD — ROUGE-L (n=50) | 0,173 | 0,349 | 0,176 |
+| Pergunta sobre protocolo — ROUGE-L (n=40) | 0,349 | 0,698 | 0,349 |
+| Pergunta sem resposta no contexto — ROUGE-L (n=19) | 0,166 | 0,391 | 0,225 |
+| Pedido de prescrição (25 de 40 com redação inédita) — ROUGE-L (n=40) | 0,245 | 1,000 | 0,755 |
+| Caso de paciente — ROUGE-L (n=30) | 0,274 | 0,965 | 0,692 |
+| pergunta_paciente — ROUGE-L (n=30) | 0,195 | 0,876 | 0,681 |
+| Laudo — ROUGE-L (n=7) | 0,338 | 0,978 | 0,640 |
+| Receita — ROUGE-L (n=2) | 0,479 | 1,000 | 0,521 |
+| MedQuAD — BLEU | 6,3 | 23,4 | 17,1 |
+| Pergunta sobre protocolo — BLEU | 15,6 | 60,4 | 44,8 |
+| Pergunta sem resposta no contexto — BLEU | 0,7 | 22,6 | 22,0 |
+| Pedido de prescrição (25 de 40 com redação inédita) — BLEU | 7,6 | 100,0 | 92,4 |
+| Caso de paciente — BLEU | 6,6 | 95,0 | 88,4 |
+| pergunta_paciente — BLEU | 5,6 | 80,2 | 74,6 |
+| Laudo — BLEU | 7,6 | 96,4 | 88,8 |
+| Receita — BLEU | 14,2 | 100,0 | 85,8 |
 
 **Comportamento exigido pelo hospital** (fração dos exemplos de teste que cumprem):
 
 | Tarefa | Verificação | Base | Ajustado |
 |---|---|---:|---:|
-| Pergunta sobre protocolo (n=40) | cita a fonte correta | 95,0% | 82,5% |
+| Pergunta sobre protocolo (n=40) | cita a fonte correta | 97,5% | 92,5% |
 | Pergunta sobre protocolo (n=40) | não indica dose | 100,0% | 100,0% |
-| Pergunta sem resposta no contexto (n=22) | admite que o contexto não responde | 4,5% | **68,2%** |
-| Pedido de prescrição (25 de 40 com redação inédita) (n=40) | recusa o pedido | 70,0% | **100,0%** |
+| Pergunta sem resposta no contexto (n=19) | admite que o contexto não responde | 5,3% | **31,6%** |
+| Pedido de prescrição (25 de 40 com redação inédita) (n=40) | recusa o pedido | 62,5% | **100,0%** |
 | Pedido de prescrição (25 de 40 com redação inédita) (n=40) | não indica dose | 100,0% | 100,0% |
 | Caso de paciente (n=30) | cobre os alertas críticos | 100,0% | 100,0% |
-| Caso de paciente (n=30) | marca como rascunho | 36,7% | **100,0%** |
+| Caso de paciente (n=30) | marca como rascunho | 13,3% | **100,0%** |
 | Caso de paciente (n=30) | não indica dose | 100,0% | 100,0% |
-| Laudo (n=15) | segue a estrutura MOD-001 | 0,0% | **100,0%** |
-| Laudo (n=15) | BI-RADS correto | 0,0% | **83,3%** |
-| Receita (n=6) | preserva os itens da prescrição | 100,0% | 100,0% |
-| Receita (n=6) | marca como rascunho | 33,3% | **100,0%** |
+| pergunta_paciente (n=30) | situacao_correta | 56,7% | **86,7%** |
+| pergunta_paciente (n=30) | não indica dose | 100,0% | 100,0% |
+| pergunta_paciente (n=30) | cobre_itens_do_prontuario | 100,0% | 100,0% |
+| Laudo (n=7) | segue a estrutura MOD-001 | 0,0% | **100,0%** |
+| Laudo (n=7) | BI-RADS correto | 0,0% | **80,0%** |
+| Receita (n=2) | preserva os itens da prescrição | 100,0% | 100,0% |
+| Receita (n=2) | marca como rascunho | 50,0% | **100,0%** |
 <!-- /tabela:modelo -->
 
 <!-- analise:modelo -->
@@ -537,6 +543,59 @@ de verdade sobre as 20 primeiras perguntas de teste e os 7 pacientes de demonstr
 - **Latência**: mediana de 2,0 s por pergunta e 7,9 s por paciente (a sugestão é mais longa). A primeira
   chamada depois de iniciar o Ollama leva ~70 s para carregar o modelo na GPU.
 <!-- /analise:ponta_a_ponta -->
+
+### 6.5 Iteração: do modelo v1 ao v2
+
+As métricas do v1 no conjunto de teste eram boas — ROUGE-L de 0,98 nos casos de paciente —, mas **rodar a
+demonstração e ler as respostas** revelou duas falhas que nenhuma métrica do teste mediria, porque o teste
+usava o mesmo formato do treino:
+
+1. **Sugestão fora do caso.** Para a paciente com sepse, o v1 sugeriu a conduta de hipoglicemia do POP-004.
+   Causa: o grafo somava ao contexto do caso trechos de uma busca semântica pelo diagnóstico; o treino nunca
+   teve isso, e o modelo aprendeu a usar *todo* o contexto. Corrigido no grafo (sem retreino): o contexto do
+   caso passou a ser exatamente o do treino, definido numa função única (`regras.fontes_para_contexto`).
+2. **Prontuário lido errado.** Perguntado sobre a hemocultura da mesma paciente depois que o laboratório
+   liberou "positiva", o v1 respondeu "pendente há 0,1 h". O contexto estava certo; o modelo **nunca tinha
+   visto uma pergunta com o prontuário no contexto** — o prontuário só aparecia nos casos do fluxo
+   automatizado. Isso exigiu retreino.
+
+O **v2** foi treinado com o mesmo notebook e os mesmos hiperparâmetros, mudando só o dataset:
+
+| Mudança no dataset | Motivo |
+|---|---|
+| +230 perguntas sobre pacientes com o prontuário no contexto, no formato exato do grafo (`formato.contexto_com_prontuario`), com respostas tiradas das regras | falha 2 |
+| Negativos "sem contexto" de 50% para 35% das perguntas frequentes | cautela excessiva do v1 (seção 6.2) |
+| Correção do bug do supra de ST (seção 11.5) e do texto da ação de glicemia crítica | 5 exemplos de treino errados no v1 |
+
+**Como comparar com justiça.** A divisão sorteada do conjunto de teste mudou com as tarefas novas, então os
+números do Colab de v1 e v2 não são sobre exatamente os mesmos exemplos — cada versão é comparada com o
+modelo base **no seu próprio teste**. A comparação direta v1 × v2 é feita no assistente completo, com os dois
+modelos servidos no Ollama e as **mesmas perguntas**, incluindo as perguntas sobre os pacientes de
+demonstração e o cenário do resultado liberado entre duas perguntas.
+
+<!-- tabela:evolucao -->
+**No conjunto de teste de cada versão** (Colab; cada uma contra o modelo base do seu teste):
+
+| Verificação | v1 | v2 |
+|---|---:|---:|
+| Cita a fonte correta | 82,5% | 92,5% |
+| Admite que o contexto não responde | 68,2% | 31,6% |
+| Recusa pedido de prescrição | 100,0% | 100,0% |
+| Pergunta sobre paciente: lê o prontuário certo | — | 86,7% |
+| Caso: cobre os alertas críticos | 100,0% | 100,0% |
+| Laudo: BI-RADS correto | 83,3% | 80,0% |
+| PubMedQA — acurácia | 0,750 | 0,755 |
+<!-- /tabela:evolucao -->
+
+<!-- analise:evolucao -->
+<!-- /analise:evolucao -->
+
+**Uma lição sobre a rubrica.** A primeira versão da verificação das perguntas sobre pacientes comparava
+frases fixas da referência e reprovou respostas certas do v1 ("Sim, o P-0001 tem um valor crítico: lactato
+4,6") — a mesma armadilha da Fase 2, desta vez pega lendo as respostas. A rubrica passou a julgar o que a
+resposta afirma, e as respostas reais do v1, rotuladas por leitura humana, viraram casos de teste. Como o
+Colab do v2 rodou com a rubrica antiga, as verificações foram recalculadas localmente a partir das respostas
+salvas (`src/avaliacao/rescorar.py`, validado por reproduzir exatamente os números do v1).
 
 ---
 
