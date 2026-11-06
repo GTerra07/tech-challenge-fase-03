@@ -1,0 +1,47 @@
+# ==========================================================
+# Tech Challenge Fase 3 - Assistente Medico com LLM ajustada
+# Python 3.12 (ambiente local: dados, assistente, testes)
+#
+# O fine-tuning NAO roda aqui: roda no Google Colab com GPU,
+# e o notebook instala as proprias dependencias (Unsloth, TRL,
+# PEFT, bitsandbytes). Ver notebooks/01_fine_tuning_colab.ipynb.
+#
+# Instalacao:
+#   python -m venv venv
+#   venv\Scripts\activate          (Windows)
+#   python -m pip install -r requirements.txt
+# ==========================================================
+
+# --- Dados ---
+pandas>=2.2.0
+# Download do PubMedQA e do MedQuAD pelo Hugging Face Hub
+datasets>=3.0.0
+
+# --- LangChain: prompts, cadeias, ferramentas, loaders ---
+langchain-core>=0.3.0
+langchain-community>=0.3.0
+langchain-text-splitters>=0.3.0
+# LLM ajustada servida localmente pelo Ollama (Aula 5 de LangChain)
+langchain-ollama>=0.2.0
+# Embeddings locais para a busca nos protocolos (sem chave de API)
+langchain-huggingface>=0.1.0
+sentence-transformers>=3.0.0
+
+# --- LangGraph: fluxos com estado, validacao humana, checkpointer ---
+langgraph>=0.2.60
+
+# --- Busca vetorial (Aula 3 de LangGraph) ---
+faiss-cpu>=1.8.0
+
+# --- Variaveis de ambiente ---
+python-dotenv>=1.0.0
+
+# --- Graficos do relatorio ---
+matplotlib>=3.8.0
+
+# --- Testes automatizados ---
+pytest>=8.0.0
+
+# --- Notebook de demonstracao ---
+jupyter>=1.0.0
+notebook>=7.0.0
