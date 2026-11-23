@@ -146,7 +146,6 @@ def perguntar(pergunta):
                                    'responder_pelo_prontuario', 'anotar_ressalva'):
             print('  -', passo[:230])
     print('-' * 100)
-    return e
 
 perguntar('Qual o prazo para comunicar um valor crítico ao médico?')
 perguntar('O paciente P-0004 pode ficar sem o potássio de controle até amanhã?')
